@@ -6,10 +6,9 @@ void JeuDeLaVie::renitialiser()
     creation_matrice();
 }
 
-
 void JeuDeLaVie::creation_matrice()
 {
-    FILE *fichier = fopen("matrice.txt", "r");
+    FILE *fichier = fopen("input.txt", "r");
     if (fichier == nullptr)
     {
         cerr << "Erreur lors de l'ouverture du fichier" << endl;
@@ -27,14 +26,13 @@ void JeuDeLaVie::creation_matrice()
     {
         for (int x = 0; x < TX; x++)
         {
-            fscanf(fichier, "%d", &PLAN[y][x].valeur);
-            PLAN[y][x].couleur = 0.0f;
+            int temp;
+            fscanf(fichier, "%d", &temp);
+            PLAN[y][x].valeur = static_cast<bool>(temp);
         }
     }
     fclose(fichier);
 }
-
-
 
 void JeuDeLaVie::detruire()
 {
@@ -70,13 +68,11 @@ void JeuDeLaVie::calculer()
                 if (PLAN[y][x].couleur == 0)
                     MIROIR[y][x].couleur = 0.7f;
                 else if (PLAN[y][x].couleur < 15)
-                MIROIR[y][x].couleur = PLAN[y][x].couleur + 0.1f;
+                    MIROIR[y][x].couleur = PLAN[y][x].couleur + 0.1f;
             }
         }
     }
 }
-
-
 
 int JeuDeLaVie::compte_voisins(int x, int y)
 {
@@ -113,10 +109,23 @@ void JeuDeLaVie::copier()
         memcpy(PLAN[i], MIROIR[i], sizeof(Cell) * TX);
     }
 }
-    
+
 void JeuDeLaVie::afficher()
 {
-    // Génère la configuration de la matrice dans un fichier texte
-
-    
+    FILE *fichier = fopen("output.txt", "w");
+    if (fichier == nullptr)
+    {
+        cerr << "Erreur lors de l'ouverture du fichier" << endl;
+        exit(1);
+    }
+    fprintf(fichier, "%d %d\n", TX, TY);
+    for (int y = 0; y < TY; y++)
+    {
+        for (int x = 0; x < TX; x++)
+        {
+            fprintf(fichier, "%d ", PLAN[y][x].valeur);
+        }
+        fprintf(fichier, "\n");
+    }
+    fclose(fichier);
 }
