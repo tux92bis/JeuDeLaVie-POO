@@ -1,32 +1,21 @@
 #pragma once
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <fstream>
-
-using namespace std;
-
-struct Cell
-{
-    bool valeur;
-    float couleur;
-};
+#include "Grille.hpp"
+#include <string>
 
 class JeuDeLaVie
 {
 private:
-    int TX, TY = 0;
-    Cell **PLAN = nullptr;
-    Cell **MIROIR = nullptr;
-    int compte_voisins(int x, int y);
-    void creation_matrice(void);
+    Grille grille;
+    int iterations;
+    std::vector<std::vector<bool>> chargerEtatDepuisFichier(const std::string &nomFichier, int &lignes, int &colonnes);
 
 public:
-    void renitialiser(void);
-    void detruire(void);
-    void calculer(void);
-    void copier(void);
-    void afficher(void);
+    JeuDeLaVie(int lignes, int colonnes, int iter);
+    void chargerEtatInitial(const std::string &nomFichier);
+    void executerModeConsole(const std::string& nomFichierEntree);
+    void executerModeGraphique(int tailleCellule);
+    void saisirEtatInitial();
+    Grille& getGrille();
+
 };

@@ -1,131 +1,140 @@
 #include "JeuDeLaVie.hpp"
+#include "InterfaceGraphique.hpp"
+#include <SFML/Graphics.hpp>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <thread>
+#include <filesystem>
+#include <chrono>
+#include <stdexcept>
+#include <sstream>
 
-void JeuDeLaVie::renitialiser()
-{
-    detruire();
-    creation_matrice();
-}
+using namespace std;
 
-void JeuDeLaVie::creation_matrice()
+JeuDeLaVie::JeuDeLaVie(int lignes, int colonnes, int iter) : grille(lignes, colonnes), iterations(iter) {}
+
+vector<vector<bool>> JeuDeLaVie::chargerEtatDepuisFichier(const string &nomFichier, int &lignes, int &colonnes)
 {
-    FILE *fichier = fopen("input.txt", "r");
-    if (fichier == nullptr)
+    ifstream fichier(nomFichier);
+    if (!fichier)
     {
-        cerr << "Erreur lors de l'ouverture du fichier" << endl;
-        exit(1);
+        cerr << "Erreur : Impossible d'ouvrir le fichier " << nomFichier << endl;
+        exit(EXIT_FAILURE);
     }
-    fscanf(fichier, "%d %d", &TX, &TY);
-    PLAN = new Cell *[TY];
-    MIROIR = new Cell *[TY];
-    for (int i = 0; i < TY; i++)
+
+    fichier >> lignes >> colonnes;
+
+    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes));
+    for (int i = 0; i < lignes; i++)
     {
-        PLAN[i] = new Cell[TX];
-        MIROIR[i] = new Cell[TX];
-    }
-    for (int y = 0; y < TY; y++)
-    {
-        for (int x = 0; x < TX; x++)
+        for (int j = 0; j < colonnes; j++)
         {
-            int temp;
-            fscanf(fichier, "%d", &temp);
-            PLAN[y][x].valeur = static_cast<bool>(temp);
+            int valeur;
+            fichier >> valeur;
+            etatInitial[i][j] = (valeur != 0);
         }
     }
-    fclose(fichier);
+
+    return etatInitial;
 }
 
-void JeuDeLaVie::detruire()
+void JeuDeLaVie::saisirEtatInitial()
 {
-    if (PLAN == nullptr && MIROIR == nullptr)
-    {
-        return;
-    }
-    for (int i = 0; i < TY; i++)
-    {
-        delete[] PLAN[i];
-        delete[] MIROIR[i];
-    }
-    delete[] PLAN;
-    delete[] MIROIR;
-}
+    // État initial
+    vector<vector<bool>> etatInitial(grille.getLignes(), vector<bool>(grille.getColonnes()));
 
-void JeuDeLaVie::calculer()
-{
-    int nb_voisins = 0;
-    for (int y = 0; y < TY; y++)
+    cout << "Saisissez l'état initial des cellules (0 pour morte, 1 pour vivante) :\n";
+    for (int i = 0; i < grille.getLignes(); i++)
     {
-        for (int x = 0; x < TX; x++)
+        for (int j = 0; j < grille.getColonnes(); j++)
         {
-            nb_voisins = compte_voisins(x, y);
-            if (nb_voisins < 2 || nb_voisins > 3)
-            {
-                MIROIR[y][x].valeur = 0;
-                MIROIR[y][x].couleur = PLAN[y][x].couleur;
-            }
-            else
-            {
-                MIROIR[y][x].valeur = 1;
-                if (PLAN[y][x].couleur == 0)
-                    MIROIR[y][x].couleur = 0.7f;
-                else if (PLAN[y][x].couleur < 15)
-                    MIROIR[y][x].couleur = PLAN[y][x].couleur + 0.1f;
-            }
+            cout << "Cellule (" << i << ", " << j << ") : ";
+            int valeur;
+            cin >> valeur;
+            etatInitial[i][j] = (valeur != 0);
         }
     }
+
+    grille.initialiser(etatInitial);
+    cout << "Grille initialisée avec succès !\n";
+    grille.afficher();
 }
 
-int JeuDeLaVie::compte_voisins(int x, int y)
+void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
 {
-    int nb = 0;
-    int yn, ys, xe, xo;
-    yn = (y - 1 + TY) % TY;
-    ys = (y + 1) % TY;
-    xe = (x + 1) % TX;
-    xo = (x - 1 + TX) % TX;
-
-    if (PLAN[yn][xo].valeur == 1)
-        nb++;
-    if (PLAN[yn][x].valeur == 1)
-        nb++;
-    if (PLAN[yn][xe].valeur == 1)
-        nb++;
-    if (PLAN[y][xo].valeur == 1)
-        nb++;
-    if (PLAN[y][xe].valeur == 1)
-        nb++;
-    if (PLAN[ys][xo].valeur == 1)
-        nb++;
-    if (PLAN[ys][x].valeur == 1)
-        nb++;
-    if (PLAN[ys][xe].valeur == 1)
-        nb++;
-    return nb;
-}
-
-void JeuDeLaVie::copier()
-{
-    for (int i = 0; i < TX; i++)
+    ifstream fichier(nomFichier);
+    if (!fichier)
     {
-        memcpy(PLAN[i], MIROIR[i], sizeof(Cell) * TX);
+        cerr << "Erreur : Impossible d'ouvrir le fichier " << nomFichier << endl;
+        exit(EXIT_FAILURE);
     }
-}
 
-void JeuDeLaVie::afficher()
-{
-    FILE *fichier = fopen("output.txt", "w");
-    if (fichier == nullptr)
+    // Lire les dimensions
+    int lignes, colonnes;
+    fichier >> lignes >> colonnes;
+
+    // Lire l'état initial
+    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes));
+    for (int i = 0; i < lignes; i++)
     {
-        cerr << "Erreur lors de l'ouverture du fichier" << endl;
-        exit(1);
-    }
-    fprintf(fichier, "%d %d\n", TX, TY);
-    for (int y = 0; y < TY; y++)
-    {
-        for (int x = 0; x < TX; x++)
+        for (int j = 0; j < colonnes; j++)
         {
-            fprintf(fichier, "%d ", PLAN[y][x].valeur);
+            int valeur;
+            fichier >> valeur;
+            etatInitial[i][j] = (valeur != 0);
         }
-        fprintf(fichier, "\n");
     }
-    fclose(fichier);
+
+    // Initialiser la grille avec les dimensions et l'état initial
+    grille = Grille(lignes, colonnes); // Recrée une grille avec les bonnes dimensions
+    grille.initialiser(etatInitial);
+
+    cout << "Grille initialisée avec succès depuis le fichier " << nomFichier << " !\n";
+    grille.afficher(); // Afficher la grille après initialisation
+}
+
+void JeuDeLaVie::executerModeConsole(const std::string& nomFichierEntree) {
+    // Effectuer les itérations
+    for (int i = 0; i < iterations; i++) {
+        std::cout << "Itération " << (i + 1) << " :\n";
+        grille.afficher();
+        grille.mettreAJour();
+    }
+
+    // Construire le nom du fichier de sortie
+    std::string fichierSortie = nomFichierEntree + "_out.txt";
+
+    // Écrire l'état final dans le fichier
+    std::ofstream fichier(fichierSortie);
+    if (!fichier) {
+        throw std::runtime_error("Erreur : Impossible de créer le fichier " + fichierSortie);
+    }
+
+    // Écrire les dimensions
+    fichier << grille.getLignes() << " " << grille.getColonnes() << "\n";
+
+    // Écrire l'état final de la grille
+    const auto& cellules = grille.obtenirCellules();
+    for (const auto& ligne : cellules) {
+        for (const auto& cellule : ligne) {
+            fichier << (cellule.estVivante() ? "1 " : "0 ");
+        }
+        fichier << "\n";
+    }
+    fichier.close();
+
+    std::cout << "L'état final a été écrit dans : " << fichierSortie << "\n";
+}
+
+Grille& JeuDeLaVie::getGrille() {
+    return grille;
+}
+
+
+
+void JeuDeLaVie::executerModeGraphique(int tailleCellule)
+{
+    InterfaceGraphique interfaceGraphique(grille, tailleCellule);
+    interfaceGraphique.afficher();
 }
