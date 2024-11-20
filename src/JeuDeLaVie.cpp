@@ -94,9 +94,11 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
     grille.afficher(); // Afficher la grille après initialisation
 }
 
-void JeuDeLaVie::executerModeConsole(const std::string& nomFichierEntree) {
+void JeuDeLaVie::executerModeConsole(const std::string &nomFichierEntree)
+{
     // Effectuer les itérations
-    for (int i = 0; i < iterations; i++) {
+    for (int i = 0; i < iterations; i++)
+    {
         std::cout << "Itération " << (i + 1) << " :\n";
         grille.afficher();
         grille.mettreAJour();
@@ -107,7 +109,8 @@ void JeuDeLaVie::executerModeConsole(const std::string& nomFichierEntree) {
 
     // Écrire l'état final dans le fichier
     std::ofstream fichier(fichierSortie);
-    if (!fichier) {
+    if (!fichier)
+    {
         throw std::runtime_error("Erreur : Impossible de créer le fichier " + fichierSortie);
     }
 
@@ -115,9 +118,11 @@ void JeuDeLaVie::executerModeConsole(const std::string& nomFichierEntree) {
     fichier << grille.getLignes() << " " << grille.getColonnes() << "\n";
 
     // Écrire l'état final de la grille
-    const auto& cellules = grille.obtenirCellules();
-    for (const auto& ligne : cellules) {
-        for (const auto& cellule : ligne) {
+    const auto &cellules = grille.obtenirCellules();
+    for (const auto &ligne : cellules)
+    {
+        for (const auto &cellule : ligne)
+        {
             fichier << (cellule.estVivante() ? "1 " : "0 ");
         }
         fichier << "\n";
@@ -127,15 +132,13 @@ void JeuDeLaVie::executerModeConsole(const std::string& nomFichierEntree) {
     std::cout << "L'état final a été écrit dans : " << fichierSortie << "\n";
 }
 
-Grille& JeuDeLaVie::getGrille() {
+Grille &JeuDeLaVie::getGrille()
+{
     return grille;
 }
-
-
 
 void JeuDeLaVie::executerModeGraphique(int tailleCellule)
 {
     InterfaceGraphique interfaceGraphique(*this, tailleCellule);
     interfaceGraphique.executer(iterations);
-
 }

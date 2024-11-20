@@ -3,7 +3,6 @@
 #include <fstream>
 #include <string>
 
-
 using namespace std;
 
 Grille::Grille(int l, int c) : lignes(l), colonnes(c), cellules(l, vector<Cellule>(c)) {}
@@ -80,11 +79,12 @@ const vector<vector<Cellule>> &Grille::obtenirCellules() const
     return cellules;
 }
 
-int Grille::getLignes() const {
+int Grille::getLignes() const
+{
     return lignes;
 }
 
-int Grille::getColonnes() const {
+int Grille::getColonnes() const
+{
     return colonnes;
 }
-

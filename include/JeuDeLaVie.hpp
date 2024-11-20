@@ -13,9 +13,8 @@ private:
 public:
     JeuDeLaVie(int lignes, int colonnes, int iter);
     void chargerEtatInitial(const std::string &nomFichier);
-    void executerModeConsole(const std::string& nomFichierEntree);
+    void executerModeConsole(const std::string &nomFichierEntree);
     void executerModeGraphique(int tailleCellule);
     void saisirEtatInitial();
-    Grille& getGrille();
-
+    Grille &getGrille();
 };

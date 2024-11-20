@@ -7,7 +7,8 @@
 
 using namespace std;
 
-int main() {
+int main()
+{
     int iterations;
     string cheminFichier;
     cout << "Entrez le nombre d'itérations : ";
@@ -23,12 +24,17 @@ int main() {
     cout << "Choisissez un mode d'exécution :\n1. Mode Console\n2. Mode Graphique\nVotre choix : ";
     cin >> choixMode;
 
-    mode* mode = nullptr; // Pointeur polymorphique
-    if (choixMode == 1) {
+    mode *mode = nullptr; // Pointeur polymorphique
+    if (choixMode == 1)
+    {
         mode = new ModeConsole(jeu, cheminFichier);
-    } else if (choixMode == 2) {
+    }
+    else if (choixMode == 2)
+    {
         mode = new InterfaceGraphique(jeu, 20); // Taille des cellules
-    } else {
+    }
+    else
+    {
         cerr << "Choix invalide !" << endl;
         return EXIT_FAILURE;
     }

@@ -5,12 +5,13 @@
 #include <SFML/Graphics.hpp>
 #include "JeuDeLaVie.hpp"
 
-class InterfaceGraphique : public mode {
+class InterfaceGraphique : public mode
+{
 private:
-    JeuDeLaVie& jeu; // Relation directe avec JeuDeLaVie
+    JeuDeLaVie &jeu; // Relation directe avec JeuDeLaVie
     int tailleCellule;
 
 public:
-    InterfaceGraphique(JeuDeLaVie& jeu, int tailleCellule);
+    InterfaceGraphique(JeuDeLaVie &jeu, int tailleCellule);
     void executer(int iterations) override;
 };

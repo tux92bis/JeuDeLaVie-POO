@@ -3,13 +3,13 @@
 #include "JeuDeLaVie.hpp"
 #include <string>
 
-
-class ModeConsole : public mode {
+class ModeConsole : public mode
+{
 private:
-    JeuDeLaVie& jeu;
+    JeuDeLaVie &jeu;
     std::string nomFichierEntree;
 
 public:
-    ModeConsole(JeuDeLaVie& jeu, const std::string& nomFichierEntree);
+    ModeConsole(JeuDeLaVie &jeu, const std::string &nomFichierEntree);
     void executer(int iterations) override;
 };
