@@ -1,7 +1,0 @@
-/*
-Compiler dans le dossier src avec : g++ -Wall -Wextra -pedantic -I../include *.cpp -o main -lsfml-graphics -lsfml-window -lsfml-system
-
-
-Executer dans le dossier source avec : ./JeuDeLaVie
-/*
-
