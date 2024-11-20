@@ -135,6 +135,7 @@ Grille& JeuDeLaVie::getGrille() {
 
 void JeuDeLaVie::executerModeGraphique(int tailleCellule)
 {
-    InterfaceGraphique interfaceGraphique(grille, tailleCellule);
-    interfaceGraphique.afficher();
+    InterfaceGraphique interfaceGraphique(*this, tailleCellule);
+    interfaceGraphique.executer(iterations);
+
 }

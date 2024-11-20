@@ -1,15 +1,16 @@
 #pragma once
 
+#include "Mode.hpp"
 #include "Grille.hpp"
 #include <SFML/Graphics.hpp>
+#include "JeuDeLaVie.hpp"
 
-class InterfaceGraphique
-{
+class InterfaceGraphique : public mode {
 private:
-    Grille &grille;
+    JeuDeLaVie& jeu; // Relation directe avec JeuDeLaVie
     int tailleCellule;
 
 public:
-    InterfaceGraphique(Grille &g, int taille);
-    void afficher();
+    InterfaceGraphique(JeuDeLaVie& jeu, int tailleCellule);
+    void executer(int iterations) override;
 };

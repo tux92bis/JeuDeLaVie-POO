@@ -5,48 +5,56 @@
 
 using namespace std;
 
-InterfaceGraphique::InterfaceGraphique(Grille& g, int taille) : grille(g), tailleCellule(taille) {}
+InterfaceGraphique::InterfaceGraphique(JeuDeLaVie& jeu, int taille)
+    : jeu(jeu), tailleCellule(taille) {}
 
-void InterfaceGraphique::afficher() {
+void InterfaceGraphique::executer(int iterations) {
+    auto& grille = jeu.getGrille();
+
     // Calculer la taille de la fenêtre
     int largeurFenetre = grille.getColonnes() * tailleCellule;
     int hauteurFenetre = grille.getLignes() * tailleCellule;
 
     sf::RenderWindow fenetre(sf::VideoMode(largeurFenetre, hauteurFenetre), "Jeu de la Vie");
 
+    int currentIteration = 0;
     while (fenetre.isOpen()) {
         sf::Event event;
         while (fenetre.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                fenetre.close();
+                fenetre.close(); // Fermer la fenêtre si l'utilisateur clique sur "fermer"
             }
         }
 
+        // Dessiner la grille
         fenetre.clear();
-
-        // Dessiner les cellules
         const auto& cellules = grille.obtenirCellules();
-        for (int i = 0; i < grille.getLignes(); i++) {
-            for (int j = 0; j < grille.getColonnes(); j++) {
+        for (int x = 0; x < grille.getLignes(); x++) {
+            for (int y = 0; y < grille.getColonnes(); y++) {
                 sf::RectangleShape rectangle(sf::Vector2f(tailleCellule, tailleCellule));
-                rectangle.setPosition(j * tailleCellule, i * tailleCellule);
+                rectangle.setPosition(y * tailleCellule, x * tailleCellule);
 
-                if (cellules[i][j].estVivante()) {
-                    rectangle.setFillColor(sf::Color::Green);
-                } else {
-                    rectangle.setFillColor(sf::Color::Black);
-                }
+                rectangle.setFillColor(cellules[x][y].estVivante() ? sf::Color::Green : sf::Color::Black);
+                rectangle.setOutlineThickness(1);
+                rectangle.setOutlineColor(sf::Color::White);
 
                 fenetre.draw(rectangle);
             }
         }
-
         fenetre.display();
 
-        // Mettre à jour la grille
-        grille.mettreAJour();
+        // Pause pour visualiser l'évolution
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        // Pause pour contrôler la vitesse
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        // Mettre à jour la grille pour la prochaine itération
+        if (currentIteration < iterations) {
+            grille.mettreAJour();
+            currentIteration++;
+        }
+
+        // Après la dernière itération, rester en pause jusqu'à fermeture manuelle
+        if (currentIteration >= iterations) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // Pause pour observer le résultat
+        }
     }
 }
