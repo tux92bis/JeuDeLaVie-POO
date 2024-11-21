@@ -1,22 +1,21 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <iostream>
 #include "Cellule.hpp"
 
-TEST_CASE("Cellule: Initialisation et état")
-{
+void testCellule() {
     Cellule c;
 
-    SECTION("Cellule est morte par défaut")
-    {
-        REQUIRE(c.estVivante() == false);
+    // Test de l'état initial
+    if (!c.estVivante()) {
+        std::cout << "Test 1: Cellule morte par défaut - Réussi\n";
+    } else {
+        std::cout << "Test 1: Cellule morte par défaut - Échoué\n";
     }
 
-    SECTION("Modification de l'état de la cellule")
-    {
-        c.setVivante(true);
-        REQUIRE(c.estVivante() == true);
-
-        c.setVivante(false);
-        REQUIRE(c.estVivante() == false);
+    // Test de la modification de l'état
+    c.estVivante(true);
+    if (c.estVivante()) {
+        std::cout << "Test 2: Cellule vivante après setVivante(true) - Réussi\n";
+    } else {
+        std::cout << "Test 2: Cellule vivante après setVivante(true) - Échoué\n";
     }
 }

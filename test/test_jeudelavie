@@ -1,0 +1,21 @@
+#include <iostream>
+#include "JeuDeLaVie.hpp"
+
+void testJeuDeLaVie() {
+    JeuDeLaVie jeu(3, 3, 5);
+
+    // Test de chargement d'état initial
+    jeu.chargerEtatInitial("etat_initial.txt");
+    auto& grille = jeu.getGrille();
+    auto cellules = grille.obtenirCellules();
+
+    if (cellules[1][1].estVivante()) {
+        std::cout << "Test 1: Chargement de l'état initial - Réussi\n";
+    } else {
+        std::cout << "Test 1: Chargement de l'état initial - Échoué\n";
+    }
+
+    // Test d'exécution
+    jeu.executerModeConsole("etat_initial.txt");
+    std::cout << "Test 2: Exécution du mode console - (Vérifiez les résultats)\n";
+}
