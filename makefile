@@ -9,12 +9,12 @@ TARGET = JeuDeLaVie
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-    $(CXX) $^ -o $@ $(LDFLAGS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
 
 %.o: ../src/%.cpp
-    $(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-    rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
 .PHONY: all clean
