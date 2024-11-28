@@ -41,9 +41,7 @@ vector<vector<bool>> JeuDeLaVie::chargerEtatDepuisFichier(const string &nomFichi
 
 void JeuDeLaVie::saisirEtatInitial()
 {
-    // État initial
     vector<vector<bool>> etatInitial(grille.getLignes(), vector<bool>(grille.getColonnes()));
-
     cout << "Saisissez l'état initial des cellules (0 pour morte, 1 pour vivante) :\n";
     for (int i = 0; i < grille.getLignes(); i++)
     {
@@ -69,12 +67,8 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
         cerr << "Erreur : Impossible d'ouvrir le fichier " << nomFichier << endl;
         exit(EXIT_FAILURE);
     }
-
-    // Lire les dimensions
     int lignes, colonnes;
     fichier >> lignes >> colonnes;
-
-    // Lire l'état initial
     vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes));
     for (int i = 0; i < lignes; i++)
     {
@@ -85,39 +79,28 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
             etatInitial[i][j] = (valeur != 0);
         }
     }
-
-    // Initialiser la grille avec les dimensions et l'état initial
-    grille = Grille(lignes, colonnes); // Recrée une grille avec les bonnes dimensions
+    grille = Grille(lignes, colonnes); 
     grille.initialiser(etatInitial);
 
     cout << "Grille initialisée avec succès depuis le fichier " << nomFichier << " !\n";
-    grille.afficher(); // Afficher la grille après initialisation
+    grille.afficher(); 
 }
 
-void JeuDeLaVie::executerModeConsole(const std::string &nomFichierEntree)
+void JeuDeLaVie::executerModeConsole(const string &nomFichierEntree)
 {
-    // Effectuer les itérations
     for (int i = 0; i < iterations; i++)
     {
-        std::cout << "Itération " << (i + 1) << " :\n";
+        cout << "Itération " << (i + 1) << " :\n";
         grille.afficher();
         grille.mettreAJour();
     }
-
-    // Construire le nom du fichier de sortie
-    std::string fichierSortie = nomFichierEntree + "_out.txt";
-
-    // Écrire l'état final dans le fichier
-    std::ofstream fichier(fichierSortie);
+    string fichierSortie = nomFichierEntree + "_out.txt";
+    ofstream fichier(fichierSortie);
     if (!fichier)
     {
-        throw std::runtime_error("Erreur : Impossible de créer le fichier " + fichierSortie);
+        throw runtime_error("Erreur : Impossible de créer le fichier " + fichierSortie);
     }
-
-    // Écrire les dimensions
     fichier << grille.getLignes() << " " << grille.getColonnes() << "\n";
-
-    // Écrire l'état final de la grille
     const auto &cellules = grille.obtenirCellules();
     for (const auto &ligne : cellules)
     {
@@ -129,7 +112,7 @@ void JeuDeLaVie::executerModeConsole(const std::string &nomFichierEntree)
     }
     fichier.close();
 
-    std::cout << "L'état final a été écrit dans : " << fichierSortie << "\n";
+    cout << "L'état final a été écrit dans : " << fichierSortie << "\n";
 }
 
 Grille &JeuDeLaVie::getGrille()
