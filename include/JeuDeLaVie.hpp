@@ -1,3 +1,14 @@
+
+
+/**
+ * @brief Classe représentant le Jeu de la Vie de Conway
+ * 
+ * Cette classe implémente la logique du Jeu de la Vie, permettant de:
+ * - Charger un état initial depuis un fichier
+ * - Exécuter le jeu en mode console ou graphique
+ * - Saisir manuellement un état initial
+ * - Gérer l'évolution des cellules selon les règles du jeu
+ */
 #pragma once
 
 #include "Grille.hpp"

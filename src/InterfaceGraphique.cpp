@@ -1,3 +1,31 @@
+
+
+/**
+ * @brief Interface graphique pour le Jeu de la Vie utilisant SFML
+ * @file InterfaceGraphique.cpp
+ * 
+ * Ce fichier implémente l'affichage graphique du Jeu de la Vie.
+ * Il utilise la bibliothèque SFML pour créer une fenêtre et afficher
+ * la grille de cellules avec un rafraîchissement périodique.
+ * 
+ * !!! Installer SFML pour compiler le programme !!!
+ * 
+ * @class InterfaceGraphique
+ * 
+ * Le constructeur:
+ * @param jeu Référence vers l'instance du Jeu de la Vie à afficher
+ * @param taille Taille en pixels de chaque cellule dans la fenêtre
+ * 
+ * La méthode executer:
+ * @param iterations Nombre d'itérations à exécuter (-1 pour infini)
+ * 
+ * Fonctionnalités:
+ * - Crée une fenêtre SFML dimensionnée selon la taille de la grille
+ * - Affiche les cellules vivantes en blanc et mortes en noir
+ * - Met à jour l'affichage toutes les 100ms
+ * - Permet de fermer la fenêtre avec le bouton de fermeture
+ * - Continue l'exécution jusqu'au nombre d'itérations spécifié
+ */
 #include "InterfaceGraphique.hpp"
 #include <thread>
 #include <chrono>
@@ -11,8 +39,6 @@ InterfaceGraphique::InterfaceGraphique(JeuDeLaVie &jeu, int taille)
 void InterfaceGraphique::executer(int iterations)
 {
     auto &grille = jeu.getGrille();
-
-    // Calculer la taille de la fenêtre
     int largeurFenetre = grille.getColonnes() * tailleCellule;
     int hauteurFenetre = grille.getLignes() * tailleCellule;
 
@@ -26,11 +52,9 @@ void InterfaceGraphique::executer(int iterations)
         {
             if (event.type == sf::Event::Closed)
             {
-                fenetre.close(); // Fermer la fenêtre si l'utilisateur clique sur "fermer"
+                fenetre.close();
             }
         }
-
-        // Dessiner la grille
         fenetre.clear();
         const auto &cellules = grille.obtenirCellules();
         for (int x = 0; x < grille.getLignes(); x++)
@@ -40,29 +64,16 @@ void InterfaceGraphique::executer(int iterations)
                 sf::RectangleShape rectangle(sf::Vector2f(tailleCellule, tailleCellule));
                 rectangle.setPosition(y * tailleCellule, x * tailleCellule);
 
-                rectangle.setFillColor(cellules[x][y].estVivante() ? sf::Color::Green : sf::Color::Black);
-                rectangle.setOutlineThickness(1);
-                rectangle.setOutlineColor(sf::Color::White);
-
+                rectangle.setFillColor(cellules[x][y].estVivante() ? sf::Color::White : sf::Color::Black);
                 fenetre.draw(rectangle);
             }
         }
         fenetre.display();
-
-        // Pause pour visualiser l'évolution
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-        // Mettre à jour la grille pour la prochaine itération
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (currentIteration < iterations)
         {
             grille.mettreAJour();
             currentIteration++;
-        }
-
-        // Après la dernière itération, rester en pause jusqu'à fermeture manuelle
-        if (currentIteration >= iterations)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // Pause pour observer le résultat
         }
     }
 }

@@ -1,3 +1,26 @@
+
+
+/**
+ * @file test_cellule.cpp
+ * @brief Fichier de tests pour la classe Cellule
+ * @details Ce fichier contient les tests unitaires pour vérifier le bon fonctionnement de la classe Cellule
+ *
+ * Les tests vérifient:
+ * - L'initialisation correcte de l'état des cellules (vivante/morte)
+ * - La modification de l'état d'une cellule
+ *
+ * @fn void testEtatInitial()
+ * @brief Test l'état initial des cellules
+ * @details Vérifie qu'une cellule est correctement initialisée comme morte ou vivante selon le paramètre du constructeur
+ *
+ * @fn void testModificationEtat() 
+ * @brief Test la modification de l'état d'une cellule
+ * @details Vérifie qu'une cellule peut changer d'état correctement (de morte à vivante et vice versa)
+ *
+ * @fn int main()
+ * @brief Point d'entrée du programme de test
+ * @return 0 si tous les tests se sont bien déroulés
+ */
 #include <iostream>
 #include "Cellule.hpp"
 

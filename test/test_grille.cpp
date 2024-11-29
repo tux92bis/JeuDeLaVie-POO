@@ -1,3 +1,26 @@
+
+
+
+/**
+ * @file test_grille.cpp
+ * @brief Fichier de tests unitaires pour la classe Grille
+ * 
+ * Ce fichier contient les tests pour vérifier le bon fonctionnement 
+ * de la classe Grille qui implémente le Jeu de la Vie.
+ *
+ * @test testInitialisation()
+ * Teste l'initialisation correcte d'une grille 3x3 avec un motif spécifique.
+ * Vérifie que les cellules sont correctement positionnées selon l'état initial.
+ *
+ * @test testMiseAJour() 
+ * Teste la mise à jour des cellules selon les règles du Jeu de la Vie.
+ * Vérifie que l'état de la grille évolue correctement après une itération.
+ * 
+ * Le motif de test utilisé est :
+ *   0 1 0
+ *   1 1 1
+ *   0 1 0
+ */
 #include <iostream>
 #include "Grille.hpp"
 

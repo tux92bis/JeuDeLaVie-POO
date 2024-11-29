@@ -1,11 +1,39 @@
+
+
+/**
+ * @brief Mode d'exécution du Jeu de la Vie en console
+ * @file ModeConsole.cpp
+ *
+ * Cette classe permet d'exécuter le Jeu de la Vie en mode console.
+ * Elle gère l'affichage des itérations et l'écriture de l'état final dans un fichier.
+ */
+
 #include "ModeConsole.hpp"
 #include <iostream>
 #include <fstream>
 
 using namespace std;
 
+/**
+ * @brief Constructeur de la classe ModeConsole
+ * @param jeu Instance du Jeu de la Vie à exécuter
+ * @param nomFichierEntree Nom du fichier d'entrée contenant l'état initial
+ */
+
 ModeConsole::ModeConsole(JeuDeLaVie &jeu, const string &nomFichierEntree)
     : jeu(jeu), nomFichierEntree(nomFichierEntree) {}
+
+/**
+ * @brief Exécute le Jeu de la Vie pour un nombre donné d'itérations
+ * @param iterations Nombre d'itérations à effectuer
+ *
+ * Cette méthode:
+ * - Affiche l'état de la grille à chaque itération
+ * - Met à jour la grille entre chaque itération
+ * - Écrit l'état final dans un fichier de sortie (nomFichierEntree + "_out.txt")
+ *
+ * @throw runtime_error Si le fichier de sortie ne peut pas être créé
+ */
 
 void ModeConsole::executer(int iterations)
 {

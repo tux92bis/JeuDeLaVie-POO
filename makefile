@@ -1,20 +1,22 @@
 CXX = g++
-CXXFLAGS = -Wall -I../include
+CXXFLAGS = -I include
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
-SRCS = $(wildcard ../src/*.cpp)
-OBJS = $(SRCS:../src/%.cpp=%.o)
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(SRCS:src/%.cpp=obj/%.o)
 
-TARGET = JeuDeLaVie
+TARGET = bin/JeuDeLaVie
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
+	@mkdir -p bin
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-%.o: ../src/%.cpp
+obj/%.o: src/%.cpp
+	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf obj bin
 
 .PHONY: all clean

@@ -1,3 +1,22 @@
+/**
+ * @file main.cpp
+ * @brief Point d'entrée principal du Jeu de la Vie
+ * 
+ * Ce programme implémente le Jeu de la Vie de Conway avec deux modes d'affichage possibles :
+ * console ou graphique. Il permet à l'utilisateur de :
+ * - Spécifier le nombre d'itérations à exécuter
+ * - Charger un fichier contenant les dimensions et l'état initial de la grille
+ * - Choisir entre le mode console et le mode graphique
+ * 
+ * Le programme utilise un design pattern Strategy pour gérer les différents modes d'affichage
+ * à travers une interface commune (classe Mode).
+ * 
+ * @note La libération de la mémoire est gérée automatiquement à la fin de l'exécution
+ * 
+ * @return 0 en cas de succès, EXIT_FAILURE en cas d'erreur
+ */
+
+
 #include "JeuDeLaVie.hpp"
 #include "ModeConsole.hpp"
 #include "InterfaceGraphique.hpp"
