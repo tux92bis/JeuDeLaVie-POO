@@ -32,7 +32,7 @@
  */
 // definirEtat(bool etat)
 
-class Cellule
+class Cellule 
 {
 private:
     bool vivante;

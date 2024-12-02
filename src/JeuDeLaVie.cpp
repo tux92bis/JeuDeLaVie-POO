@@ -98,6 +98,7 @@ void JeuDeLaVie::saisirEtatInitial()
  * @param nomFichier Chemin du fichier contenant l'état initial
 */
 
+
 void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
 {
     ifstream fichier(nomFichier);
@@ -124,6 +125,12 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
     cout << "Grille initialisée avec succès depuis le fichier " << nomFichier << " !\n";
     grille.afficher(); 
 }
+
+
+/*
+* @brief Exécute le jeu en mode console pour un nombre donné d'itérations
+* @param nomFichierEntree Chemin du fichier d'entrée
+*/
 
 void JeuDeLaVie::executerModeConsole(const string &nomFichierEntree)
 {
@@ -159,6 +166,12 @@ Grille &JeuDeLaVie::getGrille()
     return grille;
 }
 
+
+
+/**
+ * @brief Exécute le jeu en mode graphique avec une interface SFML
+ * @param tailleCellule Taille en pixels de chaque cellule
+ */
 void JeuDeLaVie::executerModeGraphique(int tailleCellule)
 {
     InterfaceGraphique interfaceGraphique(*this, tailleCellule);
