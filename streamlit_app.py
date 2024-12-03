@@ -19,29 +19,26 @@ if not os.path.exists(clone_dir):
         st.code(result.stderr)
         st.stop()
 
-# Fonction pour lister les fichiers du dépôt
-def list_repo_files(startpath):
-    files_list = []
-    for root, dirs, files in os.walk(startpath):
-        for file in files:
-            # Obtenir le chemin relatif pour un affichage propre
-            relative_path = os.path.relpath(os.path.join(root, file), startpath)
-            files_list.append(relative_path)
-    return files_list
+# Chemin vers l'exécutable pré-compilé
+executable_path = os.path.join(clone_dir, 'bin', 'main_executable')  # Modifiez le chemin si nécessaire
 
-# Afficher la liste des fichiers
-st.title('Contenu du dépôt GitHub')
-files = list_repo_files(clone_dir)
-for file in sorted(files):
-    st.write(f'- {file}')
+# Rendre l'exécutable exécutable
+subprocess.run(['chmod', '+x', executable_path])
 
-# Optionnel : Afficher le contenu des fichiers
-st.header('Afficher le contenu des fichiers')
-selected_file = st.selectbox('Sélectionnez un fichier pour voir son contenu', files)
-file_path = os.path.join(clone_dir, selected_file)
-try:
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    st.code(content, language='python' if selected_file.endswith('.py') else '')
-except Exception as e:
-    st.error(f'Impossible de lire le fichier : {e}')
+# Vérifier si l'exécutable existe
+if not os.path.exists(executable_path):
+    st.error("L'exécutable n'existe pas.")
+    st.stop()
+
+# Exécuter l'exécutable
+st.info('Exécution du programme...')
+execute_result = subprocess.run([executable_path], capture_output=True, text=True)
+
+# Vérifier si l'exécution a réussi
+if execute_result.returncode == 0:
+    st.success('Programme exécuté avec succès.')
+    st.write('Sortie du programme :')
+    st.code(execute_result.stdout)
+else:
+    st.error("Erreur lors de l'exécution du programme :")
+    st.code(execute_result.stderr)
