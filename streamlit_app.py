@@ -29,8 +29,8 @@ if compilation.returncode == 0:
 
     # Affichage de la sortie du programme
     st.text('Sortie du programme :')
-    st.log(execution.stdout)
+    st.print(execution.stdout)
 else:
     st.text('Erreur lors de la compilation :')
-    st.log(compilation.stderr)
+    st.print(compilation.stderr)
 
