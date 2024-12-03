@@ -42,16 +42,16 @@ JeuDeLaVie::JeuDeLaVie(int lignes, int colonnes, int iter) : grille(lignes, colo
 
 vector<vector<bool>> JeuDeLaVie::chargerEtatDepuisFichier(const string &nomFichier, int &lignes, int &colonnes)
 {
-    ifstream fichier(nomFichier);
+    ifstream fichier(nomFichier); // Ouverture du fichier
     if (!fichier)
     {
-        cerr << "Erreur : Impossible d'ouvrir le fichier " << nomFichier << endl;
+        cerr << "Erreur : Impossible d'ouvrir le fichier " << nomFichier << endl; // Affichage d'une erreur si le fichier ne s'ouvre pas
         exit(EXIT_FAILURE);
     }
 
     fichier >> lignes >> colonnes;
 
-    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes));
+    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes)); // Initialisation de la grille avec des cellules mortes
     for (int i = 0; i < lignes; i++)
     {
         for (int j = 0; j < colonnes; j++)
@@ -65,33 +65,6 @@ vector<vector<bool>> JeuDeLaVie::chargerEtatDepuisFichier(const string &nomFichi
     return etatInitial;
 }
 
-
-
-/**
- * @brief Permet à l'utilisateur de saisir l'état initial de la grille
- * 
- * L'utilisateur doit entrer 0 pour une cellule morte et 1 pour une cellule vivante dans le fichier texte
- */
-
-void JeuDeLaVie::saisirEtatInitial()
-{
-    vector<vector<bool>> etatInitial(grille.getLignes(), vector<bool>(grille.getColonnes())); // Initialisation de la grille avec des cellules mortes
-    cout << "Saisissez l'état initial des cellules (0 pour morte, 1 pour vivante) :\n";
-    for (int i = 0; i < grille.getLignes(); i++)
-    {
-        for (int j = 0; j < grille.getColonnes(); j++) // L'utilisateur doit entrer 0 pour une cellule morte et 1                                                  pour une cellule vivante
-        {
-            cout << "Cellule (" << i << ", " << j << ") : ";
-            int valeur;
-            cin >> valeur;
-            etatInitial[i][j] = (valeur != 0);// Si la valeur est différente de 0, la cellule est vivante
-        }
-    }
-
-    grille.initialiser(etatInitial);
-    cout << "Grille initialisée avec succès !\n";
-    grille.afficher();
-}
 
 /**
  * @brief Charge l'état initial depuis un fichier texte et initialise la grille
@@ -109,14 +82,14 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
     }
     int lignes, colonnes;
     fichier >> lignes >> colonnes;
-    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes));
-    for (int i = 0; i < lignes; i++)
+    vector<vector<bool>> etatInitial(lignes, vector<bool>(colonnes)); 
+    for (int i = 0; i < lignes; i++) // Parcours des lignes du fichier
     {
-        for (int j = 0; j < colonnes; j++)
+        for (int j = 0; j < colonnes; j++) // Parcours des colonnes du fichier
         {
             int valeur;
             fichier >> valeur;
-            etatInitial[i][j] = (valeur != 0);
+            etatInitial[i][j] = (valeur != 0); // Initialisation de la grille
         }
     }
     grille = Grille(lignes, colonnes); 
@@ -134,7 +107,7 @@ void JeuDeLaVie::chargerEtatInitial(const string &nomFichier)
 
 void JeuDeLaVie::executerModeConsole(const string &nomFichierEntree)
 {
-    for (int i = 0; i < iterations; i++)
+    for (int i = 0; i < iterations; i++) // Parcours des itérations
     {
         cout << "Itération " << (i + 1) << " :\n";
         grille.afficher();
@@ -146,13 +119,13 @@ void JeuDeLaVie::executerModeConsole(const string &nomFichierEntree)
     {
         throw runtime_error("Erreur : Impossible de créer le fichier " + fichierSortie);
     }
-    fichier << grille.getLignes() << " " << grille.getColonnes() << "\n";
-    const auto &cellules = grille.obtenirCellules();
+    fichier << grille.getLignes() << " " << grille.getColonnes() << "\n"; // Écriture de la grille dans le fichier de sortie
+    const auto &cellules = grille.obtenirCellules(); // Récupération des cellules de la grille
     for (const auto &ligne : cellules)
     {
         for (const auto &cellule : ligne)
         {
-            fichier << (cellule.estVivante() ? "1 " : "0 ");
+            fichier << (cellule.estVivante() ? "1 " : "0 "); // Écriture de l'état de chaque cellule
         }
         fichier << "\n";
     }

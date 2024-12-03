@@ -1,4 +1,4 @@
-
+#pragma once
 
 /**
  * @brief Classe représentant une cellule dans le jeu de la vie
@@ -7,7 +7,7 @@
  * Une cellule peut être soit vivante (true) soit morte (false).
  */
 
-#pragma once
+
 
 /**
  * @brief Attribut privé indiquant si la cellule est vivante

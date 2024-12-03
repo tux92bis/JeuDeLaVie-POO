@@ -11,10 +11,7 @@
  * @test testInitialisation()
  * Teste l'initialisation correcte d'une grille 3x3 avec un motif spécifique.
  * Vérifie que les cellules sont correctement positionnées selon l'état initial.
- *
- * @test testMiseAJour() 
- * Teste la mise à jour des cellules selon les règles du Jeu de la Vie.
- * Vérifie que l'état de la grille évolue correctement après une itération.
+
  * 
  * Le motif de test utilisé est :
  *   0 1 0
@@ -44,6 +41,11 @@ void testInitialisation()
         std::cout << "[FAIL] Test 1 : Initialisation de la grille.\n";
     }
 }
+/**
+ * @brief test testMiseAJour() 
+ * Teste la mise à jour des cellules selon les règles du Jeu de la Vie.
+ * Vérifie que l'état de la grille évolue correctement après une itération.
+*/
 
 void testMiseAJour()
 {

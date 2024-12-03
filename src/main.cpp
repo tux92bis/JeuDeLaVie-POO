@@ -46,7 +46,7 @@ int main()
     mode *mode = nullptr; // Pointeur polymorphique
     if (choixMode == 1)
     {
-        mode = new ModeConsole(jeu, cheminFichier);
+        mode = new ModeConsole(jeu, cheminFichier); // Allocation dynamique
     }
     else if (choixMode == 2)
     {
@@ -54,11 +54,11 @@ int main()
     }
     else
     {
-        cerr << "Choix invalide !" << endl;
+        cerr << "Choix invalide !" << endl; // Affichage d'une erreur en cas de choix invalide
         return EXIT_FAILURE;
     }
 
-    mode->executer(iterations);
+    mode->executer(iterations); 
 
     delete mode; // Libérer la mémoire
     return 0;

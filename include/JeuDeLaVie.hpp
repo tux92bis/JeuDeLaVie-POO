@@ -19,7 +19,7 @@ class JeuDeLaVie
 private:
     Grille grille;
     int iterations;
-    std::vector<std::vector<bool>> chargerEtatDepuisFichier(const std::string &nomFichier, int &lignes, int &colonnes);
+    std::vector<std::vector<bool>> chargerEtatDepuisFichier(const std::string &nomFichier, int &lignes, int &colonnes); // Méthode privée pour charger l'état initial depuis un fichier
 
 public:
     JeuDeLaVie(int lignes, int colonnes, int iter);

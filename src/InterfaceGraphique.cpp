@@ -33,47 +33,47 @@
 
 using namespace std;
 
-InterfaceGraphique::InterfaceGraphique(JeuDeLaVie &jeu, int taille)
-    : jeu(jeu), tailleCellule(taille) {}
+InterfaceGraphique::InterfaceGraphique(JeuDeLaVie &jeu, int taille) 
+    : jeu(jeu), tailleCellule(taille) {} // Initialisation des attributs
 
-void InterfaceGraphique::executer(int iterations)
+void InterfaceGraphique::executer(int iterations) 
 {
-    auto &grille = jeu.getGrille();
-    int largeurFenetre = grille.getColonnes() * tailleCellule;
-    int hauteurFenetre = grille.getLignes() * tailleCellule;
+    auto &grille = jeu.getGrille(); // Récupération de la grille du jeu
+    int largeurFenetre = grille.getColonnes() * tailleCellule; // Calcul de la largeur de la fenêtre
+    int hauteurFenetre = grille.getLignes() * tailleCellule; // Calcul de la hauteur de la fenêtre
 
-    sf::RenderWindow fenetre(sf::VideoMode(largeurFenetre, hauteurFenetre), "Jeu de la Vie");
+    sf::RenderWindow fenetre(sf::VideoMode(largeurFenetre, hauteurFenetre), "Jeu de la Vie"); // Création de la fenêtre SFML
 
-    int currentIteration = 0;
-    while (fenetre.isOpen())
+    int currentIteration = 0; // Initialisation du compteur d'itérations
+    while (fenetre.isOpen()) // Boucle principale de la fenêtre
     {
-        sf::Event event;
-        while (fenetre.pollEvent(event))
+        sf::Event event; // Gestion des événements
+        while (fenetre.pollEvent(event)) // Boucle de gestion des événements
         {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed) // Si l'utilisateur ferme la fenêtre
             {
-                fenetre.close();
+                fenetre.close();  // Fermeture de la fenêtre
             }
         }
-        fenetre.clear();
-        const auto &cellules = grille.obtenirCellules();
-        for (int x = 0; x < grille.getLignes(); x++)
+        fenetre.clear(); // Effacement de la fenêtre
+        const auto &cellules = grille.obtenirCellules(); // Récupération des cellules de la grille
+        for (int x = 0; x < grille.getLignes(); x++) // Parcours de la grille
         {
             for (int y = 0; y < grille.getColonnes(); y++)
             {
-                sf::RectangleShape rectangle(sf::Vector2f(tailleCellule, tailleCellule));
-                rectangle.setPosition(y * tailleCellule, x * tailleCellule);
+                sf::RectangleShape rectangle(sf::Vector2f(tailleCellule, tailleCellule)); // Création d'un rectangle SFML
+                rectangle.setPosition(y * tailleCellule, x * tailleCellule); // Positionnement du rectangle
 
-                rectangle.setFillColor(cellules[x][y].estVivante() ? sf::Color::White : sf::Color::Black);
-                fenetre.draw(rectangle);
+                rectangle.setFillColor(cellules[x][y].estVivante() ? sf::Color::White : sf::Color::Black); // Couleur du rectangle
+                fenetre.draw(rectangle); // Affichage du rectangle
             }
         }
-        fenetre.display();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        if (currentIteration < iterations)
+        fenetre.display(); // Affichage de la fenêtre
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Pause de 100ms
+        if (currentIteration < iterations) // Si le nombre d'itérations n'est pas atteint
         {
-            grille.mettreAJour();
-            currentIteration++;
+            grille.mettreAJour(); // Mise à jour de la grille
+            currentIteration++; // Incrémentation du compteur d'itérations
         }
     }
 }
