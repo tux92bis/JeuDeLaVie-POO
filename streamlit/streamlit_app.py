@@ -18,45 +18,25 @@ if not os.path.exists(clone_dir):
         st.error('Erreur lors du clonage du dépôt :')
         st.code(result.stderr)
         st.stop()
-
-# Vérifier si le Makefile existe
-makefile_path = os.path.join(clone_dir, '/makefile')
-if not os.path.exists(makefile_path):
-    st.error('Le Makefile n\'existe pas dans le dépôt.')
-    st.stop()
-
-# Exécuter la commande make
-st.info('Compilation du code C++ avec le Makefile...')
-make_result = subprocess.run(['make', '-C', clone_dir], capture_output=True, text=True)
-
-# Vérifier si la compilation a réussi
-if make_result.returncode == 0:
-    st.success('Compilation réussie.')
 else:
-    st.error('Erreur lors de la compilation :')
-    st.code(make_result.stderr)
-    st.stop()
+    st.info('Le dépôt GitHub a déjà été cloné.')
 
-# Chemin vers l'exécutable (vérifiez le nom de l'exécutable généré par le Makefile)
-executable_path = os.path.join(clone_dir, 'bin', 'jeu_de_la_vie')
+# Fonction pour lister les fichiers et dossiers du dépôt
+def list_repo_contents(startpath):
+    st.write('Contenu du dépôt cloné :')
+    for root, dirs, files in os.walk(startpath):
+        # Exclure le dossier .git si vous ne souhaitez pas l'afficher
+        dirs[:] = [d for d in dirs if d != '.git']
+        # Calculer le niveau de profondeur pour l'indentation
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * level
+        # Afficher le nom du dossier
+        st.write(f"{indent}- **{os.path.basename(root)}/**")
+        # Afficher les fichiers dans le dossier
+        for file in files:
+            filepath = os.path.join(root, file)
+            file_indent = ' ' * 4 * (level + 1)
+            st.write(f"{file_indent}- {file}")
 
-# Vérifier si l'exécutable existe
-if not os.path.exists(executable_path):
-    st.error("L'exécutable n'a pas été créé.")
-    st.stop()
-
-# Rendre l'exécutable exécutable
-subprocess.run(['chmod', '+x', executable_path])
-
-# Exécuter l'exécutable
-st.info('Exécution du programme...')
-execute_result = subprocess.run([executable_path], capture_output=True, text=True)
-
-# Vérifier si l'exécution a réussi
-if execute_result.returncode == 0:
-    st.success('Programme exécuté avec succès.')
-    st.write('Sortie du programme :')
-    st.code(execute_result.stdout)
-else:
-    st.error("Erreur lors de l'exécution du programme :")
-    st.code(execute_result.stderr)
+# Appeler la fonction pour afficher le contenu du dépôt
+list_repo_contents(clone_dir)
