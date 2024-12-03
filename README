@@ -28,6 +28,9 @@ Ce projet implémente le célèbre **Jeu de la Vie** de John Conway en C++, avec
 aphics -lsfml-window -lsfml-system ou faire tout simplement make
 -Se placer dans bin pour executer le programme avec ./JeuDeLaVie.
 
-Projet d'étude réaliser dans le cadre du bloc POO de la CPIA2 du CESI.
+Projet d'étude réaliser dans le cadre du bloc POO de la CPIA2 du CESI. 
+
+
+
 
 
