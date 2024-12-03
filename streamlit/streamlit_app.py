@@ -38,7 +38,7 @@ else:
     st.stop()
 
 # Chemin vers l'exécutable (vérifiez le nom de l'exécutable généré par le Makefile)
-executable_path = os.path.join(clone_dir, 'bin', 'GameOfLife')
+executable_path = os.path.join(clone_dir, 'bin', 'jeu_de_la_vie')
 
 # Vérifier si l'exécutable existe
 if not os.path.exists(executable_path):
