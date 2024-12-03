@@ -1,36 +1,47 @@
 import streamlit as st
-st.title("salut les loulou")
-st.code("//ceci est du c++")
-
 import subprocess
 import os
 
-# Chemin vers le fichier C++ que vous souhaitez compiler
-cpp_file_path = '/src/main.cpp'
+# URL du dépôt GitHub
+repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
 
-# Chemin où vous voulez placer l'exécutable
-output_directory = '/'
+# Répertoire où le dépôt sera cloné
+clone_dir = 'cloned_repo'
 
-# Nom de l'exécutable
-executable_name = 'jeux de la vie'
+# Cloner le dépôt si ce n'est pas déjà fait
+if not os.path.exists(clone_dir):
+    st.info('Clonage du dépôt GitHub...')
+    result = subprocess.run(['git', 'clone', repo_url, clone_dir], capture_output=True, text=True)
+    if result.returncode == 0:
+        st.success('Dépôt cloné avec succès.')
+    else:
+        st.error('Erreur lors du clonage du dépôt :')
+        st.code(result.stderr)
+        st.stop()
 
-# Commande pour compiler le fichier C++
-compile_command = ['g++', cpp_file_path, '-o', os.path.join(output_directory, executable_name)]
+# Fonction pour lister les fichiers du dépôt
+def list_repo_files(startpath):
+    files_list = []
+    for root, dirs, files in os.walk(startpath):
+        for file in files:
+            # Obtenir le chemin relatif pour un affichage propre
+            relative_path = os.path.relpath(os.path.join(root, file), startpath)
+            files_list.append(relative_path)
+    return files_list
 
-# Exécution de la commande de compilation
-compilation = subprocess.run(compile_command, capture_output=True, text=True)
+# Afficher la liste des fichiers
+st.title('Contenu du dépôt GitHub')
+files = list_repo_files(clone_dir)
+for file in sorted(files):
+    st.write(f'- {file}')
 
-# Vérification du succès de la compilation
-if compilation.returncode == 0:
-    st.print('Compilation réussie.')
-
-    # Commande pour exécuter le programme compilé
-    execution = subprocess.run([os.path.join(output_directory, executable_name)], capture_output=True, text=True)
-
-    # Affichage de la sortie du programme
-    st.text('Sortie du programme :')
-    st.print(execution.stdout)
-else:
-    st.text('Erreur lors de la compilation :')
-    st.print(compilation.stderr)
-
+# Optionnel : Afficher le contenu des fichiers
+st.header('Afficher le contenu des fichiers')
+selected_file = st.selectbox('Sélectionnez un fichier pour voir son contenu', files)
+file_path = os.path.join(clone_dir, selected_file)
+try:
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    st.code(content, language='python' if selected_file.endswith('.py') else '')
+except Exception as e:
+    st.error(f'Impossible de lire le fichier : {e}')
