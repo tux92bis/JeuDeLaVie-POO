@@ -26,7 +26,6 @@ else:
 
 # Fonction pour lister les fichiers et dossiers du dépôt
 def list_repo_contents(startpath):
-    st.write('Contenu du dépôt cloné :')
     for root, dirs, files in os.walk(startpath):
         # Exclure le dossier .git si vous ne souhaitez pas l'afficher
         dirs[:] = [d for d in dirs if d != '.git']
@@ -41,11 +40,14 @@ def list_repo_contents(startpath):
             file_indent = ' ' * 4 * (level + 1)
             st.write(f"{file_indent}- {file}")
 
-# Appeler la fonction pour afficher le contenu du dépôt
+# Afficher le contenu du dépôt avant la compilation
+st.write('Contenu du dépôt cloné avant la compilation :')
 list_repo_contents(clone_dir)
 
-# Chemin vers le makefile (notez que le nom est en minuscules 'makefile')
+# Chemin vers le makefile (notez que le nom est en minuscules 'makefile' ou 'Makefile')
 makefile_path = os.path.join(clone_dir_path, 'makefile')
+if not os.path.exists(makefile_path):
+    makefile_path = os.path.join(clone_dir_path, 'Makefile')
 
 # Vérifier si le makefile existe
 if not os.path.exists(makefile_path):
@@ -55,35 +57,56 @@ if not os.path.exists(makefile_path):
 else:
     st.success("Le makefile a été trouvé.")
 
-# Exécuter la commande make
+# Afficher le contenu du makefile
+with open(makefile_path, 'r') as f:
+    makefile_content = f.read()
+st.write('Contenu du makefile :')
+st.code(makefile_content)
+
+# Exécuter la commande make et afficher les messages
 st.info('Compilation du code C++ avec le makefile...')
 make_result = subprocess.run(['make', '-C', clone_dir_path], capture_output=True, text=True)
+st.write('Messages de compilation :')
+st.code(make_result.stdout + '\n' + make_result.stderr)
 
 # Vérifier si la compilation a réussi
 if make_result.returncode == 0:
     st.success('Compilation réussie.')
 else:
-    st.error('Erreur lors de la compilation :')
-    st.code(make_result.stdout + '\n' + make_result.stderr)
+    st.error('Erreur lors de la compilation.')
     st.stop()
 
-# Chemin vers l'exécutable (vérifiez le nom de l'exécutable généré par le makefile)
-executable_name = 'jeu_de_la_vie'  # Assurez-vous que c'est le bon nom
-executable_path = os.path.join(clone_dir_path, executable_name)
+# Afficher le contenu du dépôt après la compilation
+st.write('Contenu du dépôt après la compilation :')
+list_repo_contents(clone_dir)
 
-# Vérifier si l'exécutable existe
-if not os.path.exists(executable_path):
-    st.error("L'exécutable n'a pas été créé.")
-    st.write(f"Chemin vérifié : {executable_path}")
-    st.stop()
+# Rechercher les exécutables générés
+def find_executables(startpath):
+    executable_files = []
+    for root, dirs, files in os.walk(startpath):
+        for file in files:
+            filepath = os.path.join(root, file)
+            if os.access(filepath, os.X_OK) and not os.path.isdir(filepath):
+                executable_files.append(filepath)
+    return executable_files
+
+executables = find_executables(clone_dir_path)
+if executables:
+    st.write('Fichiers exécutables trouvés :')
+    for exe in executables:
+        st.write(f"- {exe}")
 else:
-    st.success("L'exécutable a été créé avec succès.")
+    st.error("Aucun exécutable n'a été trouvé.")
+    st.stop()
 
-# Rendre l'exécutable exécutable
+# Utiliser le premier exécutable trouvé
+executable_path = executables[0]
+
+# Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
 
 # Exécuter l'exécutable
-st.info('Exécution du programme...')
+st.info(f'Exécution du programme : {executable_path}')
 execute_result = subprocess.run([executable_path], capture_output=True, text=True)
 
 # Vérifier si l'exécution a réussi
