@@ -20,7 +20,7 @@ if not os.path.exists(clone_dir):
         st.stop()
 
 # Vérifier si le Makefile existe
-makefile_path = os.path.join(clone_dir, 'Makefile')
+makefile_path = os.path.join(clone_dir, '.git/HEAD/Makefile')
 if not os.path.exists(makefile_path):
     st.error('Le Makefile n\'existe pas dans le dépôt.')
     st.stop()
