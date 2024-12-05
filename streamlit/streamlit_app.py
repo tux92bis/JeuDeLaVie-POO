@@ -102,15 +102,40 @@ else:
 # Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
 
-# Exécuter l'exécutable
-st.info(f'Exécution du programme : {executable_path}')
-execute_result = subprocess.run([executable_path], capture_output=True, text=True)
+# Simulation de terminal
+st.title("Simulation de terminal pour le programme C++")
 
-# Vérifier si l'exécution a réussi
-if execute_result.returncode == 0:
-    st.success('Programme exécuté avec succès.')
-    st.write('Sortie du programme :')
-    st.code(execute_result.stdout)
-else:
-    st.error("Erreur lors de l'exécution du programme :")
-    st.code(execute_result.stderr)
+# Initialiser l'historique des commandes
+if 'history' not in st.session_state:
+    st.session_state.history = []
+
+# Champ de saisie pour la commande
+command = st.text_input("Entrez une commande pour le programme :", key='command_input')
+
+# Lorsque l'utilisateur appuie sur Entrée
+if command:
+    # Ajouter la commande à l'historique
+    st.session_state.history.append(f"> {command}")
+
+    # **IMPORTANT** : Sécurité
+    # Ne pas exécuter de commandes système arbitraires
+    # Ici, nous exécutons uniquement l'exécutable avec les arguments fournis
+    try:
+        # Construire la liste des arguments
+        args = command.strip().split()
+        cmd = [executable_path] + args
+
+        # Exécuter l'exécutable avec les arguments
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        # Ajouter la sortie à l'historique
+        output = result.stdout + result.stderr
+        st.session_state.history.append(output)
+    except Exception as e:
+        st.session_state.history.append(f"Erreur lors de l'exécution : {e}")
+
+    # Effacer le champ de saisie
+    st.session_state.command_input = ''
+
+# Afficher l'historique des commandes
+st.text_area("Terminal", value="\n".join(st.session_state.history), height=300)
