@@ -28,7 +28,7 @@ clone_dir_path = os.path.abspath(clone_dir)
 # Modifier le Makefile localement
 makefile_path = os.path.join(clone_dir_path, 'Makefile')
 
-# Nouveau contenu du Makefile
+# Nouveau contenu du Makefile avec -std=c++11
 new_makefile_content = '''
 CXX = g++
 CXXFLAGS = -std=c++11 -I include
@@ -95,9 +95,15 @@ else:
 # Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
 
-# Exécuter l'exécutable
+# **Interagir avec le programme via Streamlit**
 st.info(f'Exécution du programme : {executable_path}')
-execute_result = subprocess.run([executable_path], capture_output=True, text=True)
+
+# Si le programme nécessite des entrées utilisateur, vous pouvez les fournir via Streamlit
+# Par exemple, demander un nombre d'itérations
+iterations = st.number_input('Entrez le nombre d\'itérations :', min_value=1, max_value=1000, value=10)
+
+# Exécuter l'exécutable avec les entrées nécessaires
+execute_result = subprocess.run([executable_path, str(iterations)], capture_output=True, text=True)
 
 # Vérifier si l'exécution a réussi
 if execute_result.returncode == 0:
