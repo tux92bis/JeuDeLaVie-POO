@@ -25,46 +25,50 @@ else:
 
 clone_dir_path = os.path.abspath(clone_dir)
 
-# Fonction pour lister les fichiers et dossiers du dépôt
-def list_repo_contents(startpath):
-    st.write('Contenu du dépôt :')
-    for root, dirs, files in os.walk(startpath):
-        # Exclure le dossier .git si présent
-        dirs[:] = [d for d in dirs if d != '.git']
-        # Calculer le niveau de profondeur pour l'indentation
-        level = root.replace(startpath, '').count(os.sep)
-        indent = ' ' * 4 * level
-        # Afficher le nom du dossier
-        st.write(f"{indent}- **{os.path.basename(root)}/**")
-        # Afficher les fichiers dans le dossier
-        for file in files:
-            file_indent = ' ' * 4 * (level + 1)
-            st.write(f"{file_indent}- {file}")
+# Modifier le Makefile localement
+makefile_path = os.path.join(clone_dir_path, 'Makefile')
 
-# Afficher le contenu du dépôt
-list_repo_contents(clone_dir)
+# Nouveau contenu du Makefile
+new_makefile_content = '''
+CXX = g++
+CXXFLAGS = -std=c++11 -I include
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+SRCS = $(wildcard src/*.cpp)
+OBJS = $(SRCS:src/%.cpp=obj/%.o)
 
-# Chemin vers le makefile
-makefile_path = os.path.join(clone_dir_path, 'makefile')
-if not os.path.exists(makefile_path):
-    makefile_path = os.path.join(clone_dir_path, 'Makefile')
+TARGET = bin/JeuDeLaVie
 
-# Vérifier si le makefile existe
-if not os.path.exists(makefile_path):
-    st.error("Le makefile n'existe pas dans le dépôt.")
-    st.write(f"Chemin vérifié : {makefile_path}")
-    st.stop()
-else:
-    st.success("Le makefile a été trouvé.")
+# Règle par défaut
+all: directories $(TARGET)
 
-# Afficher le contenu du makefile
-with open(makefile_path, 'r') as f:
-    makefile_content = f.read()
-st.write('Contenu du makefile :')
-st.code(makefile_content)
+# Règle pour créer les répertoires nécessaires
+directories:
+\t@mkdir -p obj
+\t@mkdir -p bin
+
+# Règle pour créer l'exécutable
+$(TARGET): $(OBJS)
+\t$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+
+# Règle pour compiler les fichiers sources en objets
+obj/%.o: src/%.cpp
+\t$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Règle pour nettoyer les fichiers générés
+clean:
+\trm -rf obj bin
+
+.PHONY: all clean directories
+'''
+
+# Écrire le nouveau Makefile
+with open(makefile_path, 'w') as f:
+    f.write(new_makefile_content)
+
+st.write('Makefile mis à jour.')
 
 # Exécuter la commande make et afficher les messages
-st.info('Compilation du code C++ avec le makefile...')
+st.info('Compilation du code C++ avec le Makefile...')
 make_result = subprocess.run(['make', '-C', clone_dir_path], capture_output=True, text=True)
 st.write('Messages de compilation :')
 st.code(make_result.stdout + '\n' + make_result.stderr)
@@ -103,4 +107,3 @@ if execute_result.returncode == 0:
 else:
     st.error("Erreur lors de l'exécution du programme :")
     st.code(execute_result.stderr)
-
