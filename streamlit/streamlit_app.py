@@ -2,6 +2,7 @@ import streamlit as st
 import subprocess
 import os
 import shutil
+import pexpect
 
 # URL du dépôt GitHub
 repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
@@ -76,7 +77,8 @@ st.code(makefile_content)
 
 # Exécuter la commande make et afficher les messages
 st.info('Compilation du code C++ avec le Makefile...')
-make_result = subprocess.run(['make', '-C', clone_dir_path], capture_output=True, text=True)
+make_command = f"make -C {clone_dir_path}"
+make_result = subprocess.run(make_command, capture_output=True, text=True, shell=True)
 st.write('Messages de compilation :')
 st.code(make_result.stdout + '\n' + make_result.stderr)
 
@@ -102,40 +104,45 @@ else:
 # Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
 
-# Simulation de terminal
-st.title("Simulation de terminal pour le programme C++")
+# Simulation de terminal avec pexpect
+st.title("Terminal interactif avec pexpect")
 
 # Initialiser l'historique des commandes
 if 'history' not in st.session_state:
-    st.session_state.history = []
+    st.session_state.history = ""
 
-# Champ de saisie pour la commande
-command = st.text_input("Entrez une commande pour le programme :", key='command_input')
-
-# Lorsque l'utilisateur appuie sur Entrée
-if command:
-    # Ajouter la commande à l'historique
-    st.session_state.history.append(f"> {command}")
-
-    # **IMPORTANT** : Sécurité
-    # Ne pas exécuter de commandes système arbitraires
-    # Ici, nous exécutons uniquement l'exécutable avec les arguments fournis
+# Initialiser le processus pexpect s'il n'existe pas
+if 'child' not in st.session_state:
+    # Démarrer le processus
+    st.session_state.child = pexpect.spawn(executable_path, encoding='utf-8')
+    # Lire la sortie initiale
     try:
-        # Construire la liste des arguments
-        args = command.strip().split()
-        cmd = [executable_path] + args
+        initial_output = st.session_state.child.read_nonblocking(size=1024, timeout=1)
+        st.session_state.history += initial_output
+    except pexpect.exceptions.TIMEOUT:
+        pass
 
-        # Exécuter l'exécutable avec les arguments
-        result = subprocess.run(cmd, capture_output=True, text=True)
+# Afficher l'historique
+st.text_area("Terminal interactif :", st.session_state.history, height=400)
 
-        # Ajouter la sortie à l'historique
-        output = result.stdout + result.stderr
-        st.session_state.history.append(output)
-    except Exception as e:
-        st.session_state.history.append(f"Erreur lors de l'exécution : {e}")
+# Champ de saisie pour l'entrée utilisateur
+user_input = st.text_input("Entrez votre commande :")
 
-    # Effacer le champ de saisie
-    st.session_state.command_input = ''
-
-# Afficher l'historique des commandes
-st.text_area("Terminal", value="\n".join(st.session_state.history), height=300)
+if st.button("Envoyer"):
+    if user_input:
+        # Envoyer la commande au processus
+        st.session_state.child.sendline(user_input)
+        st.session_state.history += f"> {user_input}\n"
+        # Lire la sortie après l'envoi de la commande
+        try:
+            # Attendre que le processus produise une sortie
+            st.session_state.child.expect('.+', timeout=1)
+            output = st.session_state.child.after
+            st.session_state.history += output
+        except pexpect.exceptions.TIMEOUT:
+            st.session_state.history += "[Aucune sortie reçue]\n"
+        except pexpect.exceptions.EOF:
+            st.session_state.history += "\n[Le programme s'est terminé]\n"
+            del st.session_state.child
+        # Rafraîchir l'affichage
+        st.experimental_rerun()
