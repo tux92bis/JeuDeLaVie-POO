@@ -1,33 +1,38 @@
 import streamlit as st
+import requests
+import zipfile
+import io
 import subprocess
 import os
 
-# URL du dépôt GitHub
-repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
+# URL pour télécharger l'archive ZIP du dépôt
+zip_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI/archive/refs/heads/main.zip'
 
-# Répertoire où le dépôt sera cloné
-clone_dir = 'cloned_repo'
+# Répertoire où le code source sera extrait
+extract_dir = 'cloned_repo'
 
-# Chemin absolu du répertoire cloné
-clone_dir_path = os.path.abspath(clone_dir)
-
-# Cloner le dépôt si ce n'est pas déjà fait
-if not os.path.exists(clone_dir):
-    st.info('Clonage du dépôt GitHub...')
-    result = subprocess.run(['git', 'clone', repo_url, clone_dir], capture_output=True, text=True)
-    if result.returncode == 0:
-        st.success('Dépôt cloné avec succès.')
-    else:
-        st.error('Erreur lors du clonage du dépôt :')
-        st.code(result.stderr)
-        st.stop()
+# Télécharger et extraire le code source
+st.info('Téléchargement du code source...')
+response = requests.get(zip_url)
+if response.status_code == 200:
+    st.success('Code source téléchargé avec succès.')
+    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
+        zip_ref.extractall()
+    # Renommer le dossier extrait pour correspondre à 'cloned_repo'
+    extracted_folder_name = 'JeuDeLaVie-POO-CESI-main'
+    if os.path.exists(extracted_folder_name):
+        os.rename(extracted_folder_name, extract_dir)
 else:
-    st.info('Le dépôt GitHub a déjà été cloné.')
+    st.error('Erreur lors du téléchargement du code source.')
+    st.stop()
+
+clone_dir_path = os.path.abspath(extract_dir)
 
 # Fonction pour lister les fichiers et dossiers du dépôt
 def list_repo_contents(startpath):
+    st.write('Contenu du dépôt :')
     for root, dirs, files in os.walk(startpath):
-        # Exclure le dossier .git si vous ne souhaitez pas l'afficher
+        # Exclure le dossier .git si présent
         dirs[:] = [d for d in dirs if d != '.git']
         # Calculer le niveau de profondeur pour l'indentation
         level = root.replace(startpath, '').count(os.sep)
@@ -36,13 +41,11 @@ def list_repo_contents(startpath):
         st.write(f"{indent}- **{os.path.basename(root)}/**")
         # Afficher les fichiers dans le dossier
         for file in files:
-            filepath = os.path.join(root, file)
             file_indent = ' ' * 4 * (level + 1)
             st.write(f"{file_indent}- {file}")
 
-# Afficher le contenu du dépôt avant la compilation
-st.write('Contenu du dépôt cloné avant la compilation :')
-list_repo_contents(clone_dir)
+# Afficher le contenu du dépôt
+list_repo_contents(extract_dir)
 
 # Chemin vers le makefile (notez que le nom est en minuscules 'makefile' ou 'Makefile')
 makefile_path = os.path.join(clone_dir_path, 'makefile')
@@ -76,31 +79,17 @@ else:
     st.error('Erreur lors de la compilation.')
     st.stop()
 
-# Afficher le contenu du dépôt après la compilation
-st.write('Contenu du dépôt après la compilation :')
-list_repo_contents(clone_dir)
+# Rechercher l'exécutable généré dans le répertoire 'bin/'
+executable_name = 'JeuDeLaVie'  # Nom de l'exécutable attendu
+executable_path = os.path.join(clone_dir_path, 'bin', executable_name)
 
-# Rechercher les exécutables générés
-def find_executables(startpath):
-    executable_files = []
-    for root, dirs, files in os.walk(startpath):
-        for file in files:
-            filepath = os.path.join(root, file)
-            if os.access(filepath, os.X_OK) and not os.path.isdir(filepath):
-                executable_files.append(filepath)
-    return executable_files
-
-executables = find_executables(clone_dir_path)
-if executables:
-    st.write('Fichiers exécutables trouvés :')
-    for exe in executables:
-        st.write(f"- {exe}")
+# Vérifier si l'exécutable existe
+if os.path.exists(executable_path):
+    st.success(f"L'exécutable a été trouvé : {executable_path}")
 else:
-    st.error("Aucun exécutable n'a été trouvé.")
+    st.error("L'exécutable n'a pas été trouvé.")
+    st.write(f"Chemin vérifié : {executable_path}")
     st.stop()
-
-# Utiliser le premier exécutable trouvé
-executable_path = executables[0]
 
 # Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
