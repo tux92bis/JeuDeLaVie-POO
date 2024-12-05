@@ -1,32 +1,29 @@
 import streamlit as st
-import requests
-import zipfile
-import io
 import subprocess
 import os
+import shutil
 
-# URL pour télécharger l'archive ZIP du dépôt
-zip_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI/archive/refs/heads/main.zip'
+# URL du dépôt GitHub
+repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
 
-# Répertoire où le code source sera extrait
-extract_dir = 'cloned_repo'
+# Répertoire où le dépôt sera cloné
+clone_dir = 'cloned_repo'
 
-# Télécharger et extraire le code source
-st.info('Téléchargement du code source...')
-response = requests.get(zip_url)
-if response.status_code == 200:
-    st.success('Code source téléchargé avec succès.')
-    with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
-        zip_ref.extractall()
-    # Renommer le dossier extrait pour correspondre à 'cloned_repo'
-    extracted_folder_name = 'JeuDeLaVie-POO-CESI-main'
-    if os.path.exists(extracted_folder_name):
-        os.rename(extracted_folder_name, extract_dir)
+# Supprimer le répertoire cloné s'il existe déjà
+if os.path.exists(clone_dir):
+    shutil.rmtree(clone_dir)
+
+# Cloner le dépôt GitHub
+st.info('Clonage du dépôt GitHub...')
+clone_result = subprocess.run(['git', 'clone', repo_url, clone_dir], capture_output=True, text=True)
+if clone_result.returncode == 0:
+    st.success('Dépôt cloné avec succès.')
 else:
-    st.error('Erreur lors du téléchargement du code source.')
+    st.error('Erreur lors du clonage du dépôt :')
+    st.code(clone_result.stderr)
     st.stop()
 
-clone_dir_path = os.path.abspath(extract_dir)
+clone_dir_path = os.path.abspath(clone_dir)
 
 # Fonction pour lister les fichiers et dossiers du dépôt
 def list_repo_contents(startpath):
@@ -45,9 +42,9 @@ def list_repo_contents(startpath):
             st.write(f"{file_indent}- {file}")
 
 # Afficher le contenu du dépôt
-list_repo_contents(extract_dir)
+list_repo_contents(clone_dir)
 
-# Chemin vers le makefile (notez que le nom est en minuscules 'makefile' ou 'Makefile')
+# Chemin vers le makefile
 makefile_path = os.path.join(clone_dir_path, 'makefile')
 if not os.path.exists(makefile_path):
     makefile_path = os.path.join(clone_dir_path, 'Makefile')
@@ -79,7 +76,7 @@ else:
     st.error('Erreur lors de la compilation.')
     st.stop()
 
-# Rechercher l'exécutable généré dans le répertoire 'bin/'
+# Chemin vers l'exécutable
 executable_name = 'JeuDeLaVie'  # Nom de l'exécutable attendu
 executable_path = os.path.join(clone_dir_path, 'bin', executable_name)
 
