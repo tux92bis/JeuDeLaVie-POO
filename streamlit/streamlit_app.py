@@ -28,44 +28,51 @@ clone_dir_path = os.path.abspath(clone_dir)
 # Modifier le Makefile localement
 makefile_path = os.path.join(clone_dir_path, 'Makefile')
 
-# Nouveau contenu du Makefile avec -std=c++11
-new_makefile_content = '''
-CXX = g++
-CXXFLAGS = -std=c++11 -I include
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
-SRCS = $(wildcard src/*.cpp)
-OBJS = $(SRCS:src/%.cpp=obj/%.o)
+# Nouveau contenu du Makefile avec des tabulations correctes
+makefile_lines = [
+    'CXX = g++',
+    'CXXFLAGS = -std=c++11 -I include',
+    'LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system',
+    'SRCS = $(wildcard src/*.cpp)',
+    'OBJS = $(SRCS:src/%.cpp=obj/%.o)',
+    '',
+    'TARGET = bin/JeuDeLaVie',
+    '',
+    '# Règle par défaut',
+    'all: directories $(TARGET)',
+    '',
+    '# Règle pour créer les répertoires nécessaires',
+    'directories:',
+    '\t@mkdir -p obj',
+    '\t@mkdir -p bin',
+    '',
+    '# Règle pour créer l\'exécutable',
+    '$(TARGET): $(OBJS)',
+    '\t$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)',
+    '',
+    '# Règle pour compiler les fichiers sources en objets',
+    'obj/%.o: src/%.cpp',
+    '\t$(CXX) $(CXXFLAGS) -c $< -o $@',
+    '',
+    '# Règle pour nettoyer les fichiers générés',
+    'clean:',
+    '\trm -rf obj bin',
+    '',
+    '.PHONY: all clean directories',
+]
 
-TARGET = bin/JeuDeLaVie
-
-# Règle par défaut
-all: directories $(TARGET)
-
-# Règle pour créer les répertoires nécessaires
-directories:
-\t@mkdir -p obj
-\t@mkdir -p bin
-
-# Règle pour créer l'exécutable
-$(TARGET): $(OBJS)
-\t$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-
-# Règle pour compiler les fichiers sources en objets
-obj/%.o: src/%.cpp
-\t$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Règle pour nettoyer les fichiers générés
-clean:
-\trm -rf obj bin
-
-.PHONY: all clean directories
-'''
-
-# Écrire le nouveau Makefile
+# Écrire le nouveau Makefile avec des tabulations correctes
 with open(makefile_path, 'w') as f:
-    f.write(new_makefile_content)
+    for line in makefile_lines:
+        f.write(line + '\n')
 
 st.write('Makefile mis à jour.')
+
+# Afficher le contenu du Makefile
+with open(makefile_path, 'r') as f:
+    makefile_content = f.read()
+st.write('Contenu du Makefile :')
+st.code(makefile_content)
 
 # Exécuter la commande make et afficher les messages
 st.info('Compilation du code C++ avec le Makefile...')
@@ -95,15 +102,9 @@ else:
 # Rendre l'exécutable exécutable (au cas où)
 subprocess.run(['chmod', '+x', executable_path])
 
-# **Interagir avec le programme via Streamlit**
+# Exécuter l'exécutable
 st.info(f'Exécution du programme : {executable_path}')
-
-# Si le programme nécessite des entrées utilisateur, vous pouvez les fournir via Streamlit
-# Par exemple, demander un nombre d'itérations
-iterations = st.number_input('Entrez le nombre d\'itérations :', min_value=1, max_value=1000, value=10)
-
-# Exécuter l'exécutable avec les entrées nécessaires
-execute_result = subprocess.run([executable_path, str(iterations)], capture_output=True, text=True)
+execute_result = subprocess.run([executable_path], capture_output=True, text=True)
 
 # Vérifier si l'exécution a réussi
 if execute_result.returncode == 0:
