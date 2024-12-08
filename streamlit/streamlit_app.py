@@ -69,7 +69,6 @@ def grille_to_text(grille):
 def charger_etat_depuis_fichier(fichier) -> np.ndarray:
     content = fichier.read().decode('utf-8')
     lignes_f = content.strip().split('\n')
-    # Première ligne : nombre de lignes et de colonnes
     dims = lignes_f[0].split()
     l, c = int(dims[0]), int(dims[1])
     grille = np.zeros((l, c), dtype=int)
@@ -92,7 +91,6 @@ def telecharger_etats(etats, filename="historique_etats.txt"):
     return href
 
 def detecter_stabilite(etats, nb=3):
-    # Détecte si les nb derniers états sont identiques
     if len(etats) < nb:
         return False
     last = etats[-1]
@@ -167,7 +165,7 @@ else:
 
     img_init = dessiner_grille(st.session_state.grille, taille_cellule=taille_cellule)
 
-    st.write("Dessinez la grille (noir = vivant, blanc = mort), puis re-cliquez sur 'Initialiser/Réinitialiser' après avoir modifié le dessin pour l'appliquer :")
+    st.write("Dessinez la grille (noir = vivant, blanc = mort), puis cliquez sur 'Initialiser/Réinitialiser' pour appliquer le dessin :")
 
     canvas_result = st_canvas(
         fill_color="black",
@@ -180,10 +178,9 @@ else:
         key="canvas"
     )
 
-    # Note : le canvas est utilisé pour aider à dessiner. 
-    # Pour appliquer réellement le dessin dans la grille, il faut cliquer "Initialiser/Réinitialiser".
-    # Si vous souhaitez appliquer en direct sans re-cliquer, décommentez le code suivant :
-    # if canvas_result.image_data is not None:
+    # Note: Le code pour appliquer le dessin est volontairement laissé au moment de cliquer sur "Initialiser/Réinitialiser".
+    # Si vous voulez appliquer immédiatement le dessin sans recliquer, décommentez le code ci-dessous :
+    # if canvas_result is not None and canvas_result.image_data is not None:
     #     img_array = canvas_result.image_data
     #     new_grille = np.zeros((lignes, colonnes), dtype=int)
     #     for i in range(lignes):
@@ -191,8 +188,6 @@ else:
     #             px = img_array[i*taille_cellule+(taille_cellule//2), j*taille_cellule+(taille_cellule//2)]
     #             if px[0]<128 and px[1]<128 and px[2]<128:
     #                 new_grille[i,j] = 1
-    #             else:
-    #                 new_grille[i,j] = 0
     #     st.session_state.grille = new_grille
 
     st.write(f"Itération actuelle : {st.session_state.iteration}")
@@ -209,7 +204,7 @@ else:
                 st.session_state.en_cours = False
             else:
                 time.sleep(0.1)
-                st.experimental_rerun()
+                st.rerun()  # Remplacement de experimental_rerun par rerun
         else:
             st.info("Nombre d'itérations maximal atteint.")
             st.session_state.en_cours = False
