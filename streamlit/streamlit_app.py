@@ -132,3 +132,4 @@ if st.session_state.calcule and len(st.session_state.etats) > 0:
         st.markdown(telecharger_etats(st.session_state.etats, "historique_etats.txt"), unsafe_allow_html=True)
 else:
     st.info("Initialisez puis calculez. Ensuite, utilisez le slider pour naviguer parmi les itérations.")
+
