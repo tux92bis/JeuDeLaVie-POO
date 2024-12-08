@@ -35,20 +35,6 @@ def prochaine_generation(grille, torique=False):
                 nouvelle[i, j] = 1 if vivants == 3 else 0
     return nouvelle
 
-def dessiner_grille(grille, taille_cellule=20):
-    lignes, colonnes = grille.shape
-    img = Image.new('RGB', (colonnes * taille_cellule, lignes * taille_cellule), color='white')
-    draw = ImageDraw.Draw(img)
-    for i in range(lignes):
-        for j in range(colonnes):
-            couleur = (0, 0, 0) if grille[i, j] == 1 else (255, 255, 255)
-            x1 = j * taille_cellule
-            y1 = i * taille_cellule
-            x2 = x1 + taille_cellule
-            y2 = y1 + taille_cellule
-            draw.rectangle([x1, y1, x2, y2], fill=couleur, outline=(200,200,200))
-    return img
-
 def grille_to_text(grille):
     l, c = grille.shape
     lines = []
@@ -91,9 +77,6 @@ def detecter_stabilite(etats, nb=3):
             return False
     return True
 
-# -----------------------------------
-# État de l'application
-# -----------------------------------
 if 'grille' not in st.session_state:
     st.session_state.grille = None
 if 'iteration' not in st.session_state:
@@ -117,7 +100,6 @@ col1, col2, col3, col4 = st.sidebar.columns(4)
 if col1.button("Initialiser"):
     if fichier_upload is not None:
         st.session_state.grille = charger_etat_depuis_fichier(fichier_upload)
-        # Ajuste le nombre de lignes/colonnes aux données chargées
         l, c = st.session_state.grille.shape
         lignes = l
         colonnes = c
@@ -150,22 +132,15 @@ if st.session_state.grille is None:
 else:
     st.write(f"Itération actuelle : {st.session_state.iteration}")
 
-    # Affichage de la grille en mode "tableau de boutons"
-    # Chaque bouton correspond à une cellule. En cliquant dessus, on toggle son état.
-    # On fait attention à la performance : pas trop grand.
     grille = st.session_state.grille
-    # Construction d'une grille de widgets
     for i in range(lignes):
         cols = st.columns(colonnes)
         for j in range(colonnes):
             cell_label = "1" if grille[i, j] == 1 else "0"
-            # Chaque bouton doit avoir une clé unique
             if cols[j].button(cell_label, key=f"cell_{i}_{j}"):
-                # Toggle la cellule
                 st.session_state.grille[i, j] = 1 - st.session_state.grille[i, j]
-                st.experimental_rerun()
+                st.rerun()
 
-    # Si en cours, on avance
     if st.session_state.en_cours and st.session_state.grille is not None:
         if st.session_state.iteration < iterations_demandees:
             nouvelle = prochaine_generation(st.session_state.grille, torique)
@@ -178,7 +153,7 @@ else:
                 st.session_state.en_cours = False
             else:
                 time.sleep(0.1)
-                st.experimental_rerun()
+                st.rerun()
         else:
             st.info("Nombre d'itérations maximal atteint.")
             st.session_state.en_cours = False
