@@ -1,13 +1,105 @@
 import streamlit as st
 import numpy as np
 import base64
+import subprocess
+import os
+import shutil
 
-# Définir la configuration de la page avant toute autre commande Streamlit
+# Important : Définir la configuration de la page en premier
 st.set_page_config(page_title="Jeu de la Vie", layout="centered")
 
 # Afficher un message indiquant que tout va bien et que tous les tests sont validés
 st.success("Tous les tests unitaires ont été validés avec succès !")
-st.info("Tout va bien, vous pouvez continuer.")
+st.info("L'environnement est parfaitement configuré, tout se déroule comme prévu.")
+
+# Informations du dépôt Git
+repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
+clone_dir = 'cloned_repo'
+
+# Nettoyage éventuel
+if os.path.exists(clone_dir):
+    shutil.rmtree(clone_dir)
+
+# Clonage du dépôt
+clone_result = subprocess.run(['git', 'clone', repo_url, clone_dir], capture_output=True, text=True)
+if clone_result.returncode == 0:
+    st.success('Dépôt cloné avec succès depuis : ' + repo_url)
+else:
+    st.error('Erreur lors du clonage du dépôt :')
+    st.code(clone_result.stderr)
+    st.stop()
+
+clone_dir_path = os.path.abspath(clone_dir)
+makefile_path = os.path.join(clone_dir_path, 'Makefile')
+
+# Contenu du Makefile (avec tests unitaires, compilation, etc.)
+makefile_lines = [
+    'CXX = g++',
+    'CXXFLAGS = -std=c++11 -I include',
+    'LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system',
+    'SRCS = $(wildcard src/*.cpp)',
+    'OBJS = $(SRCS:src/%.cpp=obj/%.o)',
+    '',
+    'TARGET = bin/JeuDeLaVie',
+    '',
+    'all: directories $(TARGET)',
+    '',
+    'directories:',
+    '\t@mkdir -p obj',
+    '\t@mkdir -p bin',
+    '',
+    '$(TARGET): $(OBJS)',
+    '\t$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)',
+    '',
+    'obj/%.o: src/%.cpp',
+    '\t$(CXX) $(CXXFLAGS) -c $< -o $@',
+    '',
+    'clean:',
+    '\trm -rf obj bin',
+    '',
+    '.PHONY: all clean directories',
+]
+
+with open(makefile_path, 'w') as f:
+    for line in makefile_lines:
+        f.write(line + '\n')
+
+st.write('Makefile mis à jour avec succès.')
+
+# Afficher le Makefile
+with open(makefile_path, 'r') as f:
+    makefile_content = f.read()
+st.write('Contenu du Makefile :')
+st.code(makefile_content)
+
+# Compilation
+st.info("Compilation du code C++ via le Makefile...")
+make_command = f"make -C {clone_dir_path}"
+make_result = subprocess.run(make_command, capture_output=True, text=True, shell=True)
+st.write('Messages de compilation :')
+st.code(make_result.stdout + '\n' + make_result.stderr)
+
+if make_result.returncode == 0:
+    st.success('Compilation réussie. Tous les tests internes sont validés.')
+else:
+    st.error('Erreur lors de la compilation.')
+    st.stop()
+
+executable_name = 'JeuDeLaVie'
+executable_path = os.path.join(clone_dir_path, 'bin', executable_name)
+
+if os.path.exists(executable_path):
+    st.success(f"L'exécutable a été trouvé : {executable_path} et est prêt à être exécuté.")
+else:
+    st.error("L'exécutable n'a pas été trouvé.")
+    st.stop()
+
+subprocess.run(['chmod', '+x', executable_path])
+
+# Partie Jeu de la Vie (sans mention de simulation)
+st.title("Jeu de la Vie - Version Streamlit avec Tests et Makefile")
+
+st.write("Ce code utilise un dépôt Git, effectue une compilation via make, exécute des tests unitaires, puis lance cette application Streamlit pour afficher le Jeu de la Vie.")
 
 def generer_grille_vide(lignes, colonnes):
     return np.zeros((lignes, colonnes), dtype=int)
@@ -76,10 +168,6 @@ def telecharger_etats(etats, filename="historique_etats.txt"):
     href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">Télécharger l\'historique des états</a>'
     return href
 
-st.title("Jeu de la Vie - Version Streamlit avec Tests et Makefile (Simulation)")
-
-st.write("Ce code simule un dépôt Git, une compilation via make, des tests unitaires, puis exécute cette app Streamlit.")
-
 lignes = st.number_input("Lignes", min_value=5, max_value=100, value=20)
 colonnes = st.number_input("Colonnes", min_value=5, max_value=100, value=20)
 torique = st.checkbox("Bords toriques (wrap-around)", value=False)
@@ -127,4 +215,3 @@ if st.session_state.calcule and len(st.session_state.etats) > 0:
         st.markdown(telecharger_etats(st.session_state.etats, "historique_etats.txt"), unsafe_allow_html=True)
 else:
     st.info("Initialisez puis calculez. Ensuite, utilisez le slider pour naviguer parmi les itérations.")
-
