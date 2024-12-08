@@ -4,11 +4,7 @@ import time
 from PIL import Image, ImageDraw
 import base64
 
-st.set_page_config(page_title="Jeu de la Vie", layout="centered")
-
-# -----------------------------------
-# Fonctions utilitaires
-# -----------------------------------
+st.set_page_config(page_title="Jeu de la Vie", layout="wide")
 
 def generer_grille_vide(lignes, colonnes):
     return np.zeros((lignes, colonnes), dtype=int)
@@ -107,12 +103,9 @@ if 'en_cours' not in st.session_state:
 if 'etats' not in st.session_state:
     st.session_state.etats = []
 
-# -----------------------------------
-# Barre latérale
-# -----------------------------------
 st.sidebar.title("Paramètres")
-lignes = st.sidebar.number_input("Lignes", min_value=10, max_value=200, value=20, step=1)
-colonnes = st.sidebar.number_input("Colonnes", min_value=10, max_value=200, value=20, step=1)
+lignes = st.sidebar.number_input("Lignes", min_value=5, max_value=40, value=20, step=1)
+colonnes = st.sidebar.number_input("Colonnes", min_value=5, max_value=40, value=20, step=1)
 torique = st.sidebar.checkbox("Bords toriques (wrap-around)", value=False)
 mode_stable = st.sidebar.checkbox("Arrêter automatiquement quand stable (3 itérations identiques)", value=False)
 
@@ -120,43 +113,59 @@ iterations_demandees = st.sidebar.number_input("Nombre d'itérations max", min_v
 
 fichier_upload = st.sidebar.file_uploader("Charger un fichier texte (0/1)", type=["txt"])
 
-col_b1, col_b2, col_b3, col_b4 = st.sidebar.columns(4)
-if col_b1.button("Initialiser"):
+col1, col2, col3, col4 = st.sidebar.columns(4)
+if col1.button("Initialiser"):
     if fichier_upload is not None:
         st.session_state.grille = charger_etat_depuis_fichier(fichier_upload)
+        # Ajuste le nombre de lignes/colonnes aux données chargées
+        l, c = st.session_state.grille.shape
+        lignes = l
+        colonnes = c
     else:
         st.session_state.grille = generer_grille_vide(lignes, colonnes)
     st.session_state.iteration = 0
     st.session_state.en_cours = False
     st.session_state.etats = [st.session_state.grille.copy()]
 
-if col_b2.button("Lancer"):
+if col2.button("Lancer"):
     if st.session_state.grille is not None:
         st.session_state.en_cours = True
 
-if col_b3.button("Pause"):
+if col3.button("Pause"):
     st.session_state.en_cours = False
 
-if col_b4.button("Etape +1"):
+if col4.button("Etape +1"):
     if st.session_state.grille is not None:
         st.session_state.grille = prochaine_generation(st.session_state.grille, torique)
         st.session_state.iteration += 1
         st.session_state.etats.append(st.session_state.grille.copy())
 
-# -----------------------------------
-# Zone principale
-# -----------------------------------
 st.title("Jeu de la Vie (0 = mort, 1 = vivant)")
-st.write("Choisissez vos paramètres et initialisez la grille. Si aucun fichier n'est chargé, une grille vide sera créée.")
-st.write("Lancez ensuite le jeu, mettez en pause, ou avancez étape par étape.")
+st.write("1. Initialisez la grille. Si aucun fichier n'est chargé, une grille vide s'affiche.")
+st.write("2. Cliquez sur les cellules pour toggler leur état (0/1) AVANT de lancer.")
+st.write("3. Lancez le jeu, mettez en pause, ou avancez étape par étape.")
 
 if st.session_state.grille is None:
-    st.info("Veuillez initialiser une grille avec le bouton 'Initialiser' dans la barre latérale.")
+    st.info("Veuillez initialiser une grille.")
 else:
     st.write(f"Itération actuelle : {st.session_state.iteration}")
-    img = dessiner_grille(st.session_state.grille, taille_cellule=20)
-    st.image(img)
 
+    # Affichage de la grille en mode "tableau de boutons"
+    # Chaque bouton correspond à une cellule. En cliquant dessus, on toggle son état.
+    # On fait attention à la performance : pas trop grand.
+    grille = st.session_state.grille
+    # Construction d'une grille de widgets
+    for i in range(lignes):
+        cols = st.columns(colonnes)
+        for j in range(colonnes):
+            cell_label = "1" if grille[i, j] == 1 else "0"
+            # Chaque bouton doit avoir une clé unique
+            if cols[j].button(cell_label, key=f"cell_{i}_{j}"):
+                # Toggle la cellule
+                st.session_state.grille[i, j] = 1 - st.session_state.grille[i, j]
+                st.experimental_rerun()
+
+    # Si en cours, on avance
     if st.session_state.en_cours and st.session_state.grille is not None:
         if st.session_state.iteration < iterations_demandees:
             nouvelle = prochaine_generation(st.session_state.grille, torique)
