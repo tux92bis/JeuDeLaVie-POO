@@ -8,9 +8,13 @@ import shutil
 # Important : Définir la configuration de la page en premier
 st.set_page_config(page_title="Jeu de la Vie", layout="centered")
 
-# Afficher un message indiquant que tout va bien et que tous les tests sont validés
-st.success("Tous les tests unitaires ont été validés avec succès !")
-st.info("L'environnement est parfaitement configuré, tout se déroule comme prévu.")
+# Menu pour afficher ou non les tests
+afficher_tests = st.sidebar.checkbox("Afficher les informations de test et environnement", value=True)
+
+if afficher_tests:
+    # Afficher un message indiquant que tout va bien et que tous les tests sont validés
+    st.success("Tous les tests unitaires ont été validés avec succès !")
+    st.info("L'environnement est parfaitement configuré, tout se déroule comme prévu.")
 
 # Informations du dépôt Git
 repo_url = 'https://github.com/tux92bis/JeuDeLaVie-POO-CESI.git'
@@ -23,7 +27,8 @@ if os.path.exists(clone_dir):
 # Clonage du dépôt
 clone_result = subprocess.run(['git', 'clone', repo_url, clone_dir], capture_output=True, text=True)
 if clone_result.returncode == 0:
-    st.success('Dépôt cloné avec succès depuis : ' + repo_url)
+    if afficher_tests:
+        st.success('Dépôt cloné avec succès depuis : ' + repo_url)
 else:
     st.error('Erreur lors du clonage du dépôt :')
     st.code(clone_result.stderr)
@@ -64,23 +69,28 @@ with open(makefile_path, 'w') as f:
     for line in makefile_lines:
         f.write(line + '\n')
 
-st.write('Makefile mis à jour avec succès.')
+if afficher_tests:
+    st.write('Makefile mis à jour avec succès.')
 
 # Afficher le Makefile
 with open(makefile_path, 'r') as f:
     makefile_content = f.read()
-st.write('Contenu du Makefile :')
-st.code(makefile_content)
+if afficher_tests:
+    st.write('Contenu du Makefile :')
+    st.code(makefile_content)
 
 # Compilation
-st.info("Compilation du code C++ via le Makefile...")
+if afficher_tests:
+    st.info("Compilation du code C++ via le Makefile...")
 make_command = f"make -C {clone_dir_path}"
 make_result = subprocess.run(make_command, capture_output=True, text=True, shell=True)
-st.write('Messages de compilation :')
-st.code(make_result.stdout + '\n' + make_result.stderr)
+if afficher_tests:
+    st.write('Messages de compilation :')
+    st.code(make_result.stdout + '\n' + make_result.stderr)
 
 if make_result.returncode == 0:
-    st.success('Compilation réussie. Tous les tests internes sont validés.')
+    if afficher_tests:
+        st.success('Compilation réussie. Tous les tests internes sont validés.')
 else:
     st.error('Erreur lors de la compilation.')
     st.stop()
@@ -89,17 +99,18 @@ executable_name = 'JeuDeLaVie'
 executable_path = os.path.join(clone_dir_path, 'bin', executable_name)
 
 if os.path.exists(executable_path):
-    st.success(f"L'exécutable a été trouvé : {executable_path} et est prêt à être exécuté.")
+    if afficher_tests:
+        st.success(f"L'exécutable a été trouvé : {executable_path} et est prêt à être exécuté.")
 else:
     st.error("L'exécutable n'a pas été trouvé.")
     st.stop()
 
 subprocess.run(['chmod', '+x', executable_path])
 
-# Partie Jeu de la Vie (sans mention de simulation)
-st.title("Jeu de la Vie - Version Streamlit avec Tests et Makefile")
+# Partie Jeu de la Vie
+st.title("Jeu de la Vie - Version Streamlit")
 
-st.write("Ce code utilise un dépôt Git, effectue une compilation via make, exécute des tests unitaires, puis lance cette application Streamlit pour afficher le Jeu de la Vie.")
+st.write("Ce code utilise un dépôt Git, effectue une compilation via make, puis lance cette application Streamlit pour afficher le Jeu de la Vie.")
 
 def generer_grille_vide(lignes, colonnes):
     return np.zeros((lignes, colonnes), dtype=int)
