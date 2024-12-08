@@ -1,10 +1,8 @@
 import streamlit as st
 import numpy as np
 import time
-from io import StringIO
 from PIL import Image, ImageDraw
 import base64
-from streamlit_drawable_canvas import st_canvas
 
 st.set_page_config(page_title="Jeu de la Vie", layout="centered")
 
@@ -60,9 +58,7 @@ def grille_to_text(grille):
     lines = []
     lines.append(f"{l} {c}")
     for i in range(l):
-        row = []
-        for j in range(c):
-            row.append(str(grille[i, j]))
+        row = [str(val) for val in grille[i, :]]
         lines.append(' '.join(row))
     return "\n".join(lines)
 
@@ -112,7 +108,7 @@ if 'etats' not in st.session_state:
     st.session_state.etats = []
 
 # -----------------------------------
-# Barre latérale de configuration
+# Barre latérale
 # -----------------------------------
 st.sidebar.title("Paramètres")
 lignes = st.sidebar.number_input("Lignes", min_value=10, max_value=200, value=20, step=1)
@@ -124,7 +120,8 @@ iterations_demandees = st.sidebar.number_input("Nombre d'itérations max", min_v
 
 fichier_upload = st.sidebar.file_uploader("Charger un fichier texte (0/1)", type=["txt"])
 
-if st.sidebar.button("Initialiser / Réinitialiser"):
+col_b1, col_b2, col_b3, col_b4 = st.sidebar.columns(4)
+if col_b1.button("Initialiser"):
     if fichier_upload is not None:
         st.session_state.grille = charger_etat_depuis_fichier(fichier_upload)
     else:
@@ -133,14 +130,14 @@ if st.sidebar.button("Initialiser / Réinitialiser"):
     st.session_state.en_cours = False
     st.session_state.etats = [st.session_state.grille.copy()]
 
-if st.sidebar.button("Lancer"):
+if col_b2.button("Lancer"):
     if st.session_state.grille is not None:
         st.session_state.en_cours = True
 
-if st.sidebar.button("Pause"):
+if col_b3.button("Pause"):
     st.session_state.en_cours = False
 
-if st.sidebar.button("Étape suivante"):
+if col_b4.button("Etape +1"):
     if st.session_state.grille is not None:
         st.session_state.grille = prochaine_generation(st.session_state.grille, torique)
         st.session_state.iteration += 1
@@ -149,48 +146,16 @@ if st.sidebar.button("Étape suivante"):
 # -----------------------------------
 # Zone principale
 # -----------------------------------
-st.title("Jeu de la Vie de Conway (0 = mort, 1 = vivant)")
-
-st.write("Veuillez initialiser la grille. Vous pouvez :")
-st.write("- Charger un fichier texte (0/1) dans la barre latérale.")
-st.write("- Ou dessiner vous-même la grille (noir = vivant, blanc = mort) puis ré-initialiser.")
-st.write("Ensuite, lancez, mettez en pause, ou passez des étapes.")
+st.title("Jeu de la Vie (0 = mort, 1 = vivant)")
+st.write("Choisissez vos paramètres et initialisez la grille. Si aucun fichier n'est chargé, une grille vide sera créée.")
+st.write("Lancez ensuite le jeu, mettez en pause, ou avancez étape par étape.")
 
 if st.session_state.grille is None:
-    st.info("Veuillez initialiser une grille dans la barre latérale.")
+    st.info("Veuillez initialiser une grille avec le bouton 'Initialiser' dans la barre latérale.")
 else:
-    taille_cellule = 15
-    largeur = colonnes * taille_cellule
-    hauteur = lignes * taille_cellule
-
-    img_init = dessiner_grille(st.session_state.grille, taille_cellule=taille_cellule)
-
-    st.write("Dessinez la grille (noir = vivant, blanc = mort), puis cliquez sur 'Initialiser/Réinitialiser' pour appliquer le dessin :")
-
-    canvas_result = st_canvas(
-        fill_color="black",
-        stroke_width=1,
-        stroke_color="black",
-        background_color="white",
-        width=largeur,
-        height=hauteur,
-        drawing_mode="freedraw",
-        key="canvas"
-    )
-
-    # Note: Le code pour appliquer le dessin est volontairement laissé au moment de cliquer sur "Initialiser/Réinitialiser".
-    # Si vous voulez appliquer immédiatement le dessin sans recliquer, décommentez le code ci-dessous :
-    # if canvas_result is not None and canvas_result.image_data is not None:
-    #     img_array = canvas_result.image_data
-    #     new_grille = np.zeros((lignes, colonnes), dtype=int)
-    #     for i in range(lignes):
-    #         for j in range(colonnes):
-    #             px = img_array[i*taille_cellule+(taille_cellule//2), j*taille_cellule+(taille_cellule//2)]
-    #             if px[0]<128 and px[1]<128 and px[2]<128:
-    #                 new_grille[i,j] = 1
-    #     st.session_state.grille = new_grille
-
     st.write(f"Itération actuelle : {st.session_state.iteration}")
+    img = dessiner_grille(st.session_state.grille, taille_cellule=20)
+    st.image(img)
 
     if st.session_state.en_cours and st.session_state.grille is not None:
         if st.session_state.iteration < iterations_demandees:
@@ -198,17 +163,16 @@ else:
             st.session_state.iteration += 1
             st.session_state.etats.append(nouvelle.copy())
             st.session_state.grille = nouvelle
-            # Vérification de la stabilité si mode_stable
+
             if mode_stable and detecter_stabilite(st.session_state.etats, nb=3):
                 st.info("La grille est stable, arrêt automatique.")
                 st.session_state.en_cours = False
             else:
                 time.sleep(0.1)
-                st.rerun()  # Remplacement de experimental_rerun par rerun
+                st.experimental_rerun()
         else:
             st.info("Nombre d'itérations maximal atteint.")
             st.session_state.en_cours = False
 
-    # Lien de téléchargement des états
     if len(st.session_state.etats) > 0:
         st.markdown(telecharger_etats(st.session_state.etats, "historique_etats.txt"), unsafe_allow_html=True)
