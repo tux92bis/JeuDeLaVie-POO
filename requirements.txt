@@ -1,2 +1,6 @@
-import streamlit 
-import pexpect 
+pexpect 
+streamlit
+streamlit-drawable-canvas
+pillow
+numpy
+
