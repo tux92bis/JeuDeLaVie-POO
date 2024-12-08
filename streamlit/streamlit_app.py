@@ -6,6 +6,10 @@ import base64
 import numpy as np
 import pexpect
 
+# Définir la configuration de la page avant toute autre commande Streamlit
+st.set_page_config(page_title="Jeu de la Vie", layout="centered")
+
+# Le reste de votre code...
 #---------------------------------------
 # Partie Compilation/Clonage du Dépôt + pexpect
 #---------------------------------------
