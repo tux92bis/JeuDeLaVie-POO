@@ -1,10 +1,9 @@
 import streamlit as st
 import numpy as np
 import time
-from PIL import Image, ImageDraw
 import base64
 
-st.set_page_config(page_title="Jeu de la Vie", layout="wide")
+st.set_page_config(page_title="Jeu de la Vie", layout="centered")
 
 def generer_grille_vide(lignes, colonnes):
     return np.zeros((lignes, colonnes), dtype=int)
@@ -28,21 +27,12 @@ def prochaine_generation(grille, torique=False):
                         if nx < 0 or nx >= lignes or ny < 0 or ny >= colonnes:
                             continue
                     vivants += grille[nx, ny]
-            # Règles standard de Conway
+            # Règles de Conway
             if grille[i, j] == 1:
                 nouvelle[i, j] = 1 if vivants in [2, 3] else 0
             else:
                 nouvelle[i, j] = 1 if vivants == 3 else 0
     return nouvelle
-
-def grille_to_text(grille):
-    l, c = grille.shape
-    lines = []
-    lines.append(f"{l} {c}")
-    for i in range(l):
-        row = [str(val) for val in grille[i, :]]
-        lines.append(' '.join(row))
-    return "\n".join(lines)
 
 def charger_etat_depuis_fichier(fichier) -> np.ndarray:
     content = fichier.read().decode('utf-8')
@@ -57,17 +47,6 @@ def charger_etat_depuis_fichier(fichier) -> np.ndarray:
             grille[i, j] = 1 if cellule != 0 else 0
     return grille
 
-def telecharger_etats(etats, filename="historique_etats.txt"):
-    output = []
-    for idx, e in enumerate(etats):
-        output.append(f"Generation {idx}:")
-        output.append(grille_to_text(e))
-        output.append("")  
-    txt = "\n".join(output)
-    b64 = base64.b64encode(txt.encode()).decode()
-    href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">Télécharger l\'historique des états</a>'
-    return href
-
 def detecter_stabilite(etats, nb=3):
     if len(etats) < nb:
         return False
@@ -77,86 +56,79 @@ def detecter_stabilite(etats, nb=3):
             return False
     return True
 
-if 'grille' not in st.session_state:
-    st.session_state.grille = None
-if 'iteration' not in st.session_state:
-    st.session_state.iteration = 0
-if 'en_cours' not in st.session_state:
-    st.session_state.en_cours = False
-if 'etats' not in st.session_state:
-    st.session_state.etats = []
+def grille_to_emoji(grille):
+    # Affiche la grille en utilisant des carrés emojis
+    # Vivant = ⬛, Mort = ⬜
+    ligne_str = []
+    for i in range(grille.shape[0]):
+        row = ''.join('⬛' if x == 1 else '⬜' for x in grille[i,:])
+        ligne_str.append(row)
+    return '\n'.join(ligne_str)
 
+def telecharger_etats(etats, filename="historique_etats.txt"):
+    output = []
+    for idx, e in enumerate(etats):
+        output.append(f"Generation {idx}:")
+        l, c = e.shape
+        output.append(f"{l} {c}")
+        for i in range(l):
+            output.append(' '.join(str(val) for val in e[i,:]))
+        output.append("")
+    txt = "\n".join(output)
+    b64 = base64.b64encode(txt.encode()).decode()
+    href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">Télécharger l\'historique des états</a>'
+    return href
+
+st.title("Jeu de la Vie - Optimisé")
+st.write("Configuration, calcul en une fois, puis navigation entre les itérations.")
+
+# Barre latérale
 st.sidebar.title("Paramètres")
-lignes = st.sidebar.number_input("Lignes", min_value=5, max_value=40, value=20, step=1)
-colonnes = st.sidebar.number_input("Colonnes", min_value=5, max_value=40, value=20, step=1)
+lignes = st.sidebar.number_input("Lignes", min_value=5, max_value=200, value=20, step=1)
+colonnes = st.sidebar.number_input("Colonnes", min_value=5, max_value=200, value=20, step=1)
 torique = st.sidebar.checkbox("Bords toriques (wrap-around)", value=False)
-mode_stable = st.sidebar.checkbox("Arrêter automatiquement quand stable (3 itérations identiques)", value=False)
-
+mode_stable = st.sidebar.checkbox("Arrêt automatique si stable (3 itérations identiques)", value=False)
 iterations_demandees = st.sidebar.number_input("Nombre d'itérations max", min_value=1, value=100, step=10)
 
-fichier_upload = st.sidebar.file_uploader("Charger un fichier texte (0/1)", type=["txt"])
+fichier_upload = st.sidebar.file_uploader("Fichier initial (0/1)", type=["txt"])
 
-col1, col2, col3, col4 = st.sidebar.columns(4)
-if col1.button("Initialiser"):
+if 'grille_initiale' not in st.session_state:
+    st.session_state.grille_initiale = None
+if 'etats' not in st.session_state:
+    st.session_state.etats = []
+if 'calcule' not in st.session_state:
+    st.session_state.calcule = False
+
+if st.sidebar.button("Initialiser"):
     if fichier_upload is not None:
-        st.session_state.grille = charger_etat_depuis_fichier(fichier_upload)
-        l, c = st.session_state.grille.shape
-        lignes = l
-        colonnes = c
+        st.session_state.grille_initiale = charger_etat_depuis_fichier(fichier_upload)
     else:
-        st.session_state.grille = generer_grille_vide(lignes, colonnes)
-    st.session_state.iteration = 0
-    st.session_state.en_cours = False
-    st.session_state.etats = [st.session_state.grille.copy()]
+        st.session_state.grille_initiale = generer_grille_vide(lignes, colonnes)
+    st.session_state.calcule = False
+    st.session_state.etats = [st.session_state.grille_initiale.copy()]
 
-if col2.button("Lancer"):
-    if st.session_state.grille is not None:
-        st.session_state.en_cours = True
+if st.sidebar.button("Calculer"):
+    # Calcul de toutes les générations en une fois
+    if st.session_state.grille_initiale is not None:
+        etats = [st.session_state.grille_initiale.copy()]
+        for i in range(iterations_demandees):
+            nouvelle = prochaine_generation(etats[-1], torique)
+            etats.append(nouvelle)
+            if mode_stable and detecter_stabilite(etats, nb=3):
+                st.info(f"Arrêt car la grille est stable à l'itération {i+1}.")
+                break
+        st.session_state.etats = etats
+        st.session_state.calcule = True
+    else:
+        st.warning("Veuillez initialiser d'abord.")
 
-if col3.button("Pause"):
-    st.session_state.en_cours = False
-
-if col4.button("Etape +1"):
-    if st.session_state.grille is not None:
-        st.session_state.grille = prochaine_generation(st.session_state.grille, torique)
-        st.session_state.iteration += 1
-        st.session_state.etats.append(st.session_state.grille.copy())
-
-st.title("Jeu de la Vie (0 = mort, 1 = vivant)")
-st.write("1. Initialisez la grille. Si aucun fichier n'est chargé, une grille vide s'affiche.")
-st.write("2. Cliquez sur les cellules pour toggler leur état (0/1) AVANT de lancer.")
-st.write("3. Lancez le jeu, mettez en pause, ou avancez étape par étape.")
-
-if st.session_state.grille is None:
-    st.info("Veuillez initialiser une grille.")
-else:
-    st.write(f"Itération actuelle : {st.session_state.iteration}")
-
-    grille = st.session_state.grille
-    for i in range(lignes):
-        cols = st.columns(colonnes)
-        for j in range(colonnes):
-            cell_label = "1" if grille[i, j] == 1 else "0"
-            if cols[j].button(cell_label, key=f"cell_{i}_{j}"):
-                st.session_state.grille[i, j] = 1 - st.session_state.grille[i, j]
-                st.rerun()
-
-    if st.session_state.en_cours and st.session_state.grille is not None:
-        if st.session_state.iteration < iterations_demandees:
-            nouvelle = prochaine_generation(st.session_state.grille, torique)
-            st.session_state.iteration += 1
-            st.session_state.etats.append(nouvelle.copy())
-            st.session_state.grille = nouvelle
-
-            if mode_stable and detecter_stabilite(st.session_state.etats, nb=3):
-                st.info("La grille est stable, arrêt automatique.")
-                st.session_state.en_cours = False
-            else:
-                time.sleep(0.1)
-                st.rerun()
-        else:
-            st.info("Nombre d'itérations maximal atteint.")
-            st.session_state.en_cours = False
-
+if st.session_state.calcule and len(st.session_state.etats) > 0:
+    iteration_max = len(st.session_state.etats)-1
+    iteration_select = st.slider("Itération à afficher", 0, iteration_max, 0)
+    st.write(f"Itération sélectionnée : {iteration_select}")
+    grille = st.session_state.etats[iteration_select]
+    st.text(grille_to_emoji(grille))
     if len(st.session_state.etats) > 0:
         st.markdown(telecharger_etats(st.session_state.etats, "historique_etats.txt"), unsafe_allow_html=True)
+else:
+    st.info("Initialisez puis calculez. Ensuite, utilisez le slider pour naviguer parmi les itérations.")
